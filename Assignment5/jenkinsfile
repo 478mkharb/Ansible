@@ -9,27 +9,41 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'mukesh',
+                    url: 'https://github.com/478mkharb/Ansible.git',
+                    credentialsId: 'github-pat'
+            }
+        }
+
+        stage('Verify Ansible') {
+            steps {
+                sh '''
+                  ansible --version
+                '''
             }
         }
 
         stage('Ansible Syntax Check') {
             steps {
-                sh '''
-                ansible-playbook site.yml \
-                  -i inventory/hosts.yml \
-                  --syntax-check
-                '''
+                dir('Assignment5') {
+                    sh '''
+                      ansible-playbook site.yml \
+                        -i inventory/hosts.yml \
+                        --syntax-check
+                    '''
+                }
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
-                sh '''
-                ansible-playbook site.yml \
-                  -i inventory/hosts.yml \
-                  -f 5
-                '''
+                dir('Assignment5') {
+                    sh '''
+                      ansible-playbook site.yml \
+                        -i inventory/hosts.yml \
+                        -f 5
+                    '''
+                }
             }
         }
     }
@@ -40,6 +54,9 @@ pipeline {
         }
         failure {
             echo '❌ Ansible deployment failed'
+        }
+        always {
+            cleanWs()
         }
     }
 }
