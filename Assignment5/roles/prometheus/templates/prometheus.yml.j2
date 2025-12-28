@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - "localhost:9090"   # Prometheus server itself
+
+  - job_name: node
+    static_configs:
+      - targets:
+          - "{{ hostvars[groups['app'][0]].ansible_host }}:9100"  # Node exporter on app server
+
+  - job_name: blackbox
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - "http://{{ hostvars[groups['app'][0]].ansible_host }}:8080/actuator/health"  # Health endpoint
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: "127.0.0.1:9115"   # Blackbox exporter

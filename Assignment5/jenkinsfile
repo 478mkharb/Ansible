@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    environment {
+        ANSIBLE_FORCE_COLOR = 'true'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Ansible Syntax Check') {
+            steps {
+                sh '''
+                ansible-playbook site.yml \
+                  -i inventory/hosts.yml \
+                  --syntax-check
+                '''
+            }
+        }
+
+        stage('Run Ansible Playbook') {
+            steps {
+                sh '''
+                ansible-playbook site.yml \
+                  -i inventory/hosts.yml \
+                  -f 5
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Ansible deployment completed successfully'
+        }
+        failure {
+            echo '❌ Ansible deployment failed'
+        }
+    }
+}

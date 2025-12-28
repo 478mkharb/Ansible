@@ -1,0 +1,19 @@
+---
+- name: Install Java, Maven and Git
+  package:
+    name: "{{ java_packages[ansible_os_family] + maven_packages[ansible_os_family] + ['git'] }}"
+    state: present
+
+- name: Create application user
+  user:
+    name: "{{ app_user }}"
+    system: yes
+    create_home: no
+
+- name: Create application directory
+  file:
+    path: "{{ app_base_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0755"

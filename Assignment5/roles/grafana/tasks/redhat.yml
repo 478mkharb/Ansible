@@ -1,0 +1,126 @@
+---
+# CentOS Grafana Installation + Dashboards Provisioning
+
+- name: Add Grafana YUM repository
+  copy:
+    dest: /etc/yum.repos.d/grafana.repo
+    content: |
+      [grafana]
+      name=Grafana OSS
+      baseurl=https://packages.grafana.com/oss/rpm
+      repo_gpgcheck=1
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://packages.grafana.com/gpg.key
+      sslverify=1
+      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+
+- name: Install Grafana
+  dnf:
+    name: grafana
+    state: present
+
+- name: Ensure wget is installed
+  dnf:
+    name: wget
+    state: present
+
+# Stop Grafana BEFORE provisioning
+- name: Stop Grafana service
+  systemd:
+    name: grafana-server
+    state: stopped
+
+# Create directories
+- name: Create Grafana provisioning and dashboard directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0755"
+  loop:
+    - /etc/grafana/provisioning/datasources
+    - /etc/grafana/provisioning/dashboards
+    - /var/lib/grafana/dashboards
+
+# Prometheus datasource
+- name: Copy Prometheus datasource
+  copy:
+    src: datasource-prometheus.yml
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    owner: grafana
+    group: grafana
+    mode: "0644"
+
+# Dashboard provider
+- name: Copy dashboard provider config
+  copy:
+    src: dashboards.yml
+    dest: /etc/grafana/provisioning/dashboards/dashboards.yml
+    owner: grafana
+    group: grafana
+    mode: "0644"
+
+# Download dashboards
+- name: Download Grafana dashboards
+  get_url:
+    url: "{{ item.url }}"
+    dest: "/var/lib/grafana/dashboards/{{ item.dest }}"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  loop:
+    - { url: "https://grafana.com/api/dashboards/1860/revisions/31/download", dest: "node-exporter.json" }
+    - { url: "https://grafana.com/api/dashboards/19268/revisions/1/download", dest: "prometheus.json" }
+    - { url: "https://grafana.com/api/dashboards/7587/revisions/1/download", dest: "blackbox.json" }
+
+
+# SELinux fix
+- name: Set SELinux context for Grafana data
+  command: chcon -R -t grafana_var_lib_t /var/lib/grafana
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_selinux.status == "enabled"
+
+- name: Install SELinux tools
+  package:
+    name: policycoreutils-python-utils
+    state: present
+
+- name: Allow Prometheus port 9090 in SELinux
+  command:
+    cmd: semanage port -m -t http_port_t -p tcp 9090
+  ignore_errors: true
+
+- name: Allow Blackbox exporter port 9115 in SELinux
+  command: semanage port -a -t http_port_t -p tcp 9115
+  register: blackbox_port
+  failed_when:
+    - blackbox_port.rc != 0
+    - "'already defined' not in blackbox_port.stderr"
+  changed_when:
+    - blackbox_port.rc == 0
+  when:
+    - ansible_selinux.status == "enabled"
+
+
+- name: Allow Grafana outbound network access
+  seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+
+- name: Open Prometheus port in firewall
+  firewalld:
+    port: 9090/tcp
+    permanent: true
+    state: enabled
+    immediate: true
+
+# Start Grafana
+- name: Enable and start Grafana
+  systemd:
+    name: grafana-server
+    enabled: yes
+    state: started
