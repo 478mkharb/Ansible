@@ -5,26 +5,25 @@
     system: yes
     shell: /usr/sbin/nologin
 
-# Clone blackbox_exporter repo at a specific tag
-- name: Clone blackbox_exporter repository
-  git:
-    repo: https://github.com/prometheus/blackbox_exporter.git
-    dest: /opt/blackbox_exporter
-    version: v0.25.0
-    force: yes
+- name: Download blackbox exporter
+  get_url:
+    url: https://github.com/prometheus/blackbox_exporter/releases/download/v0.25.0/blackbox_exporter-0.25.0.linux-amd64.tar.gz
+    dest: /tmp/blackbox.tar.gz
 
-# Copy the binary from the cloned repo (prebuilt binary if available)
-- name: Install blackbox_exporter binary
+- name: Extract blackbox exporter
+  unarchive:
+    src: /tmp/blackbox.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Install binary
   copy:
-    src: /opt/blackbox_exporter/blackbox_exporter
+    src: /opt/blackbox_exporter-0.25.0.linux-amd64/blackbox_exporter
     dest: /usr/local/bin/blackbox_exporter
-    owner: blackbox
-    group: blackbox
     mode: '0755'
     remote_src: yes
 
-# Copy configuration
-- name: Copy blackbox configuration
+- name: Copy blackbox config
   copy:
     src: blackbox.yml
     dest: /etc/blackbox.yml
@@ -32,8 +31,7 @@
     group: blackbox
     mode: '0644'
 
-# Create systemd service
-- name: Create systemd service for blackbox exporter
+- name: Create systemd service
   copy:
     dest: /etc/systemd/system/blackbox_exporter.service
     content: |
@@ -50,10 +48,3 @@
       [Install]
       WantedBy=multi-user.target
   notify: restart blackbox
-
-# Handlers to restart service
-- name: restart blackbox
-  systemd:
-    name: blackbox_exporter
-    state: restarted
-    enabled: yes
