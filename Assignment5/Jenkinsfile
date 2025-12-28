@@ -3,61 +3,55 @@ pipeline {
 
     environment {
         ANSIBLE_FORCE_COLOR = 'true'
-        ANSIBLE_HOST_KEY_CHECKING = 'False'
+        DASHBOARD_DIR = 'Assignment5/roles/grafana/files'
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'mukesh',
-                    url: 'https://github.com/478mkharb/Ansible.git',
-                    credentialsId: 'github-pat'
+                checkout scm
             }
         }
 
-        stage('Verify Ansible') {
+        stage('Fetch Grafana Dashboards') {
             steps {
                 sh '''
-                  set -e
-                  ansible --version
+                set -e
+
+                mkdir -p ${DASHBOARD_DIR}
+
+                echo "Fetching Grafana dashboards..."
+
+                curl -fL -o ${DASHBOARD_DIR}/node-exporter.json \
+                  https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
+
+                curl -fL -o ${DASHBOARD_DIR}/prometheus.json \
+                  https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/prometheus-stats.json
+
+                curl -fL -o ${DASHBOARD_DIR}/blackbox.json \
+                  https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
                 '''
             }
         }
 
-        stage('Syntax Check') {
+        stage('Ansible Syntax Check') {
             steps {
-                dir('Assignment5') {
-                    sh '''
-                      ansible-playbook site.yml \
-                        -i inventory/hosts.yml \
-                        --syntax-check
-                    '''
-                }
+                sh '''
+                ansible-playbook site.yml \
+                  -i inventory/hosts.yml \
+                  --syntax-check
+                '''
             }
         }
 
-        stage('Dry Run (Check Mode)') {
+        stage('Run Ansible Playbook') {
             steps {
-                dir('Assignment5') {
-                    sh '''
-                      ansible-playbook site.yml \
-                        -i inventory/hosts.yml \
-                        --check
-                    '''
-                }
-            }
-        }
-
-        stage('Apply Playbook') {
-            steps {
-                dir('Assignment5') {
-                    sh '''
-                      ansible-playbook site.yml \
-                        -i inventory/hosts.yml \
-                        -f 5
-                    '''
-                }
+                sh '''
+                ansible-playbook site.yml \
+                  -i inventory/hosts.yml \
+                  -f 5
+                '''
             }
         }
     }
@@ -67,10 +61,7 @@ pipeline {
             echo '✅ Ansible deployment completed successfully'
         }
         failure {
-            echo '❌ Ansible deployment failed — check console logs'
-        }
-        always {
-            cleanWs()
+            echo '❌ Ansible deployment failed'
         }
     }
 }
