@@ -14,41 +14,7 @@ pipeline {
             }
         }
 
-          stage('Fetch Grafana Dashboards') {
-    steps {
-        sh '''
-        set -e
-
-        DASHBOARD_DIR="Assignment5/roles/grafana/files"
-        mkdir -p "${DASHBOARD_DIR}"
-
-        echo "Fetching Grafana dashboards..."
-
-        # Node Exporter
-        curl -fL \
-          -o "${DASHBOARD_DIR}/node-exporter.json" \
-          https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
-
-        # Prometheus (FIXED – VALID URL)
-        curl -fL \
-          -o "${DASHBOARD_DIR}/prometheus.json" \
-          https://raw.githubusercontent.com/grafana/grafana-dashboards/main/dashboards/prometheus-stats.json
-
-        # Blackbox Exporter
-        curl -fL \
-          -o "${DASHBOARD_DIR}/blackbox.json" \
-          https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
-
-        echo "Dashboards fetched successfully"
-        '''
-    }
-}
-
-
-
-
-
-
+         
         stage('Ansible Syntax Check') {
             steps {
                 sh '''
