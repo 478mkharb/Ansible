@@ -28,7 +28,8 @@ pipeline {
                 https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
 
                 curl -fL -o ${DASHBOARD_DIR}/prometheus.json \
-                https://raw.githubusercontent.com/grafana/grafana/main/public/dashboards/prometheus.json
+                https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/prometheus-stats.json
+
 
                 curl -fL -o ${DASHBOARD_DIR}/blackbox.json \
                 https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
