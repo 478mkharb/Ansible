@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         ANSIBLE_FORCE_COLOR = 'true'
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
     }
 
     stages {
@@ -18,12 +19,13 @@ pipeline {
         stage('Verify Ansible') {
             steps {
                 sh '''
+                  set -e
                   ansible --version
                 '''
             }
         }
 
-        stage('Ansible Syntax Check') {
+        stage('Syntax Check') {
             steps {
                 dir('Assignment5') {
                     sh '''
@@ -35,7 +37,19 @@ pipeline {
             }
         }
 
-        stage('Run Ansible Playbook') {
+        stage('Dry Run (Check Mode)') {
+            steps {
+                dir('Assignment5') {
+                    sh '''
+                      ansible-playbook site.yml \
+                        -i inventory/hosts.yml \
+                        --check
+                    '''
+                }
+            }
+        }
+
+        stage('Apply Playbook') {
             steps {
                 dir('Assignment5') {
                     sh '''
@@ -53,7 +67,7 @@ pipeline {
             echo '✅ Ansible deployment completed successfully'
         }
         failure {
-            echo '❌ Ansible deployment failed'
+            echo '❌ Ansible deployment failed — check console logs'
         }
         always {
             cleanWs()
