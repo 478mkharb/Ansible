@@ -14,26 +14,30 @@ pipeline {
             }
         }
 
-        stage('Fetch Grafana Dashboards') {
-            steps {
-                sh '''
-                set -e
+            stage('Fetch Grafana Dashboards') {
+                steps {
+                    sh '''
+                    set -e
 
-                mkdir -p ${DASHBOARD_DIR}
+                    DASHBOARD_DIR="Assignment5/roles/grafana/files"
+                    mkdir -p ${DASHBOARD_DIR}
 
-                echo "Fetching Grafana dashboards..."
+                    echo "Fetching Grafana dashboards..."
 
-                curl -fL -o ${DASHBOARD_DIR}/node-exporter.json \
-                  https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
+                    curl -fL -o ${DASHBOARD_DIR}/node-exporter.json \
+                    https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
 
-                curl -fL -o ${DASHBOARD_DIR}/prometheus.json \
-                  https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/prometheus-stats.json
+                    curl -fL -o ${DASHBOARD_DIR}/prometheus.json \
+                    https://raw.githubusercontent.com/grafana/grafana/main/public/dashboards/prometheus.json
 
-                curl -fL -o ${DASHBOARD_DIR}/blackbox.json \
-                  https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
-                '''
-            }
+                    curl -fL -o ${DASHBOARD_DIR}/blackbox.json \
+                    https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
+
+                    echo "Dashboards fetched successfully"
+                    '''
         }
+    }
+
 
         stage('Ansible Syntax Check') {
             steps {
