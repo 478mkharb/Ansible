@@ -25,13 +25,13 @@ pipeline {
                     echo "Fetching Grafana dashboards..."
 
                     curl -fL -o ${DASHBOARD_DIR}/node-exporter.json \
-                    https://raw.githubusercontent.com/rfmoz/grafana-dashboards/master/prometheus/node-exporter-full.json
+                    https://grafana.com/grafana/dashboards/1860-node-exporter-full/download
 
                     curl -fL -o ${DASHBOARD_DIR}/prometheus.json \
-                    https://raw.githubusercontent.com/grafana/grafana/main/public/dashboards/prometheus.json
+                    https://grafana.com/grafana/dashboards/19268-prometheus/download
 
                     curl -fL -o ${DASHBOARD_DIR}/blackbox.json \
-                    https://raw.githubusercontent.com/prometheus/blackbox_exporter/master/contrib/grafana/blackbox-exporter.json
+                    https://grafana.com/grafana/dashboards/7587-blackbox-exporter-exporter/download
 
                     echo "Dashboards fetched successfully"
                     '''
