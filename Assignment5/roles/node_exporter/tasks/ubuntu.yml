@@ -6,8 +6,8 @@
     shell: /usr/sbin/nologin
 
 - name: Download node exporter
-  get_url:
-    url: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+  git:
+    repo: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
     dest: /tmp/node_exporter-1.10.2.linux-amd64.tar.gz
 
 - name: Extract node exporter
