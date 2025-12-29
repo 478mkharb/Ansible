@@ -37,18 +37,7 @@ pipeline {
             }
         }
 
-        stage('Dry Run (Check Mode)') {
-            steps {
-                dir('Assignment5') {
-                    sh '''
-                      ansible-playbook site.yml \
-                        -i inventory/hosts.yml \
-                        --check
-                    '''
-                }
-            }
-        }
-
+        
         stage('Apply Playbook') {
             steps {
                 dir('Assignment5') {

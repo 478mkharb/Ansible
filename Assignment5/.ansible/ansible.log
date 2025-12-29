@@ -10907,3 +10907,134 @@ Origin: /home/mukesh/Opstree/vidyarthi_phase/Ansible/Assignment5/roles/grafana/t
 2025-12-28 19:18:18,043 p=1199268 u=mukesh n=ansible INFO| PLAY RECAP ********************************************************************************************************
 2025-12-28 19:18:18,043 p=1199268 u=mukesh n=ansible INFO| centos9                    : ok=36   changed=5    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0   
 2025-12-28 19:18:18,043 p=1199268 u=mukesh n=ansible INFO| web-server                 : ok=16   changed=4    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+2025-12-29 17:52:08,454 p=210512 u=mukesh n=ansible INFO| PLAY [app] ***********************************************************************
+2025-12-29 17:52:08,469 p=210512 u=mukesh n=ansible INFO| TASK [Gathering Facts] ***********************************************************
+2025-12-29 17:52:10,208 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:10,218 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Load OS specific vars] ****************************************
+2025-12-29 17:52:10,254 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:10,284 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Install Java, Maven and Git] **********************************
+2025-12-29 17:52:11,812 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:11,820 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Create application user] **************************************
+2025-12-29 17:52:12,381 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:12,387 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Create application directory] *********************************
+2025-12-29 17:52:12,833 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:12,839 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Clone application repo] ***************************************
+2025-12-29 17:52:21,709 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:21,717 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Build application] ********************************************
+2025-12-29 17:52:32,193 p=210512 u=mukesh n=ansible INFO| changed: [web-server]
+2025-12-29 17:52:32,200 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Find built JAR file] ******************************************
+2025-12-29 17:52:32,686 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:32,691 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Fail if no JAR was built] *************************************
+2025-12-29 17:52:32,705 p=210512 u=mukesh n=ansible INFO| skipping: [web-server]
+2025-12-29 17:52:32,711 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Create systemd service] ***************************************
+2025-12-29 17:52:33,565 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:33,571 p=210512 u=mukesh n=ansible INFO| TASK [app_server : Enable and start app] *****************************************
+2025-12-29 17:52:34,365 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:34,374 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Install Node Exporter on RedHat] ***************************
+2025-12-29 17:52:34,390 p=210512 u=mukesh n=ansible INFO| skipping: [web-server]
+2025-12-29 17:52:34,396 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Install Node Exporter on Ubuntu/Debian] ********************
+2025-12-29 17:52:34,423 p=210512 u=mukesh n=ansible INFO| included: /home/mukesh/Ansible-git-push/Assignment5/roles/node_exporter/tasks/ubuntu.yml for web-server
+2025-12-29 17:52:34,427 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Create node exporter user] *********************************
+2025-12-29 17:52:34,836 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:34,843 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Download Node Exporter archive] ****************************
+2025-12-29 17:52:47,177 p=210512 u=mukesh n=ansible INFO| changed: [web-server]
+2025-12-29 17:52:47,187 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Extract Node Exporter binary] ******************************
+2025-12-29 17:52:47,311 p=210512 u=mukesh n=ansible INFO| skipping: [web-server]
+2025-12-29 17:52:47,316 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Ensure Node Exporter binary is executable] *****************
+2025-12-29 17:52:47,670 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:47,676 p=210512 u=mukesh n=ansible INFO| TASK [node_exporter : Create systemd service] ************************************
+2025-12-29 17:52:48,393 p=210512 u=mukesh n=ansible INFO| ok: [web-server]
+2025-12-29 17:52:48,408 p=210512 u=mukesh n=ansible INFO| RUNNING HANDLER [app_server : restart application] *******************************
+2025-12-29 17:52:49,106 p=210512 u=mukesh n=ansible INFO| changed: [web-server]
+2025-12-29 17:52:49,111 p=210512 u=mukesh n=ansible INFO| PLAY [monitoring] ****************************************************************
+2025-12-29 17:52:49,118 p=210512 u=mukesh n=ansible INFO| TASK [Gathering Facts] ***********************************************************
+2025-12-29 17:52:51,580 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:52:51,587 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Install Blackbox exporter on RedHat] ****************************
+2025-12-29 17:52:51,648 p=210512 u=mukesh n=ansible INFO| included: /home/mukesh/Ansible-git-push/Assignment5/roles/blackbox/tasks/redhat.yml for centos9
+2025-12-29 17:52:51,654 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Create blackbox user] *******************************************
+2025-12-29 17:52:52,384 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:52:52,392 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Download blackbox exporter] *************************************
+2025-12-29 17:53:01,163 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:01,168 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Extract blackbox exporter] **************************************
+2025-12-29 17:53:03,006 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:03,010 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Install blackbox binary] ****************************************
+2025-12-29 17:53:03,795 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:03,799 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Copy blackbox config] *******************************************
+2025-12-29 17:53:04,861 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:04,866 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Set SELinux context for blackbox config] ************************
+2025-12-29 17:53:05,889 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:05,893 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Set SELinux context for blackbox binary] ************************
+2025-12-29 17:53:06,508 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:06,513 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Apply SELinux contexts] *****************************************
+2025-12-29 17:53:06,913 p=210512 u=mukesh n=ansible INFO| changed: [centos9]
+2025-12-29 17:53:06,918 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Create systemd service] *****************************************
+2025-12-29 17:53:07,946 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:07,950 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Reload systemd] *************************************************
+2025-12-29 17:53:09,025 p=210512 u=mukesh n=ansible INFO| changed: [centos9]
+2025-12-29 17:53:09,032 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Enable and start blackbox exporter] *****************************
+2025-12-29 17:53:09,695 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:09,700 p=210512 u=mukesh n=ansible INFO| TASK [blackbox : Install Blackbox exporter on Ubuntu/Debian] *********************
+2025-12-29 17:53:09,717 p=210512 u=mukesh n=ansible INFO| skipping: [centos9]
+2025-12-29 17:53:09,725 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Install Prometheus on RedHat] *********************************
+2025-12-29 17:53:09,763 p=210512 u=mukesh n=ansible INFO| included: /home/mukesh/Ansible-git-push/Assignment5/roles/prometheus/tasks/redhat.yml for centos9
+2025-12-29 17:53:09,770 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Create prometheus user] ***************************************
+2025-12-29 17:53:10,326 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:10,334 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Create directories] *******************************************
+2025-12-29 17:53:10,912 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/opt/prometheus)
+2025-12-29 17:53:11,624 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/var/lib/prometheus)
+2025-12-29 17:53:12,732 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/etc/prometheus)
+2025-12-29 17:53:12,739 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Download Prometheus] ******************************************
+2025-12-29 17:53:22,177 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:22,183 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Extract Prometheus] *******************************************
+2025-12-29 17:53:35,111 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:35,120 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Install binaries] *********************************************
+2025-12-29 17:53:37,932 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=prometheus)
+2025-12-29 17:53:41,420 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=promtool)
+2025-12-29 17:53:41,428 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Copy console files] *******************************************
+2025-12-29 17:53:42,618 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=consoles)
+2025-12-29 17:53:43,195 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=console_libraries)
+2025-12-29 17:53:43,200 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Copy Prometheus config] ***************************************
+2025-12-29 17:53:44,237 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:44,242 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Create systemd service] ***************************************
+2025-12-29 17:53:45,227 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:45,232 p=210512 u=mukesh n=ansible INFO| TASK [prometheus : Install Prometheus on Ubuntu/Debian] **************************
+2025-12-29 17:53:45,245 p=210512 u=mukesh n=ansible INFO| skipping: [centos9]
+2025-12-29 17:53:45,254 p=210512 u=mukesh n=ansible INFO| TASK [grafana : include_tasks] ***************************************************
+2025-12-29 17:53:45,292 p=210512 u=mukesh n=ansible INFO| included: /home/mukesh/Ansible-git-push/Assignment5/roles/grafana/tasks/redhat.yml for centos9
+2025-12-29 17:53:45,296 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Add Grafana YUM repository] **************************************
+2025-12-29 17:53:46,377 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:46,381 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Install Grafana] *************************************************
+2025-12-29 17:53:49,040 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:49,044 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Install required packages] ***************************************
+2025-12-29 17:53:50,902 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:50,907 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Stop Grafana service] ********************************************
+2025-12-29 17:53:52,488 p=210512 u=mukesh n=ansible INFO| changed: [centos9]
+2025-12-29 17:53:52,494 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Create Grafana provisioning and dashboard directories] ***********
+2025-12-29 17:53:53,257 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/etc/grafana/provisioning/datasources)
+2025-12-29 17:53:54,016 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/etc/grafana/provisioning/dashboards)
+2025-12-29 17:53:54,852 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=/var/lib/grafana/dashboards)
+2025-12-29 17:53:54,858 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Copy Prometheus datasource] **************************************
+2025-12-29 17:53:57,063 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:57,070 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Copy dashboard provider config] **********************************
+2025-12-29 17:53:59,016 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:53:59,025 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Deploy Grafana dashboards] ***************************************
+2025-12-29 17:54:00,848 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=node-exporter.json)
+2025-12-29 17:54:02,917 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=prometheus.json)
+2025-12-29 17:54:05,000 p=210512 u=mukesh n=ansible INFO| ok: [centos9] => (item=blackbox.json)
+2025-12-29 17:54:05,007 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Set SELinux context for Grafana data] ****************************
+2025-12-29 17:54:05,794 p=210512 u=mukesh n=ansible INFO| changed: [centos9]
+2025-12-29 17:54:05,798 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Allow Prometheus port 9090 in SELinux] ***************************
+2025-12-29 17:54:08,303 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:54:08,312 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Allow Blackbox exporter port 9115 in SELinux] ********************
+2025-12-29 17:54:10,906 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:54:10,913 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Allow Grafana outbound network access] ***************************
+2025-12-29 17:54:12,470 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:54:12,474 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Open Prometheus port in firewall] ********************************
+2025-12-29 17:54:14,294 p=210512 u=mukesh n=ansible INFO| ok: [centos9]
+2025-12-29 17:54:14,298 p=210512 u=mukesh n=ansible INFO| TASK [grafana : Enable and start Grafana] ****************************************
+2025-12-29 17:54:18,090 p=210512 u=mukesh n=ansible INFO| changed: [centos9]
+2025-12-29 17:54:18,096 p=210512 u=mukesh n=ansible INFO| TASK [grafana : include_tasks] ***************************************************
+2025-12-29 17:54:18,120 p=210512 u=mukesh n=ansible INFO| skipping: [centos9]
+2025-12-29 17:54:18,131 p=210512 u=mukesh n=ansible INFO| PLAY RECAP ***********************************************************************
+2025-12-29 17:54:18,132 p=210512 u=mukesh n=ansible INFO| centos9                    : ok=37   changed=5    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0   
+2025-12-29 17:54:18,133 p=210512 u=mukesh n=ansible INFO| web-server                 : ok=16   changed=3    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0   
