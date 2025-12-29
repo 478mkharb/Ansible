@@ -5,25 +5,25 @@
     system: yes
     shell: /usr/sbin/nologin
 
-- name: Download node exporter
-  git:
-    repo: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
-    dest: /tmp/node_exporter-1.10.2.linux-amd64.tar.gz
+- name: Download Node Exporter archive
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+    dest: /tmp/node_exporter.tar.gz
+    mode: '0644'
 
-- name: Extract node exporter
+- name: Extract Node Exporter binary
   unarchive:
-    src: /tmp/node_exporter-1.10.2.linux-amd64.tar.gz
-    dest: /opt/node_exporter-1.10.2.linux-amd64
+    src: /tmp/node_exporter.tar.gz
+    dest: /usr/local/bin
     remote_src: yes
+    extra_opts:
+      - --strip-components=1
+    creates: /usr/local/bin/node_exporter
 
-- name: Install binary
-  copy:
-    src: /opt/node_exporter-1.8.1.linux-amd64/node_exporter
-    dest: /usr/local/bin/node_exporter
-    owner: node_exporter
-    group: node_exporter
+- name: Ensure Node Exporter binary is executable
+  file:
+    path: /usr/local/bin/node_exporter
     mode: '0755'
-    remote_src: yes
 
 - name: Create systemd service
   copy:
