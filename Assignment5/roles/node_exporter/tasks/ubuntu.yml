@@ -8,12 +8,12 @@
 - name: Download node exporter
   get_url:
     url: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
-    dest: /tmp/node_exporter.tar.gz
+    dest: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
 
 - name: Extract node exporter
   unarchive:
-    src: /tmp/node_exporter.tar.gz
-    dest: /opt/
+    src: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
+    dest: /opt/node_exporter-1.8.1.linux-amd64
     remote_src: yes
 
 - name: Install binary
