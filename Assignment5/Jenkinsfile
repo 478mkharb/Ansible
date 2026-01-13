@@ -1,2 +1,2 @@
-@Library('jenkins-ansible-shared-lib') _
+@Library('jenkins_Ansible_A6_Shared_lib') _
 ansibleDeploy()
