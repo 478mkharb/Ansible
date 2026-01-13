@@ -1,14 +1,19 @@
-- hosts: app
-  gather_facts: true
+---
+- name: Configure Application Server
+  hosts: role_app
   become: true
+  become_user: root
+  gather_facts: true
   roles:
     - app_server
     - node_exporter
 
-- hosts: monitoring
-  gather_facts: true
+- name: Configure Monitoring Stack
+  hosts: role_monitoring
   become: true
+  become_user: root
+  gather_facts: true
   roles:
-     - blackbox    
-     - prometheus
-     - grafana
+    - prometheus
+    - grafana
+    - blackbox

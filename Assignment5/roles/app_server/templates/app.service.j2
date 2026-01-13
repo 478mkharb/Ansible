@@ -3,7 +3,7 @@ Description={{ app_name }} Application
 After=network.target
 
 [Service]
-User={{ app_user }}
+User={{ ansible_user | default('ubuntu') }}
 ExecStart=/usr/bin/java -jar {{ jar_result.files[0].path }}
 Restart=always
 SuccessExitStatus=143

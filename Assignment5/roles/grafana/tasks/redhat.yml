@@ -1,7 +1,7 @@
 ---
-# CentOS Grafana Installation + Dashboards Provisioning (Jenkins-safe)
+# Universal Grafana Installation + Dashboards Provisioning
 
-- name: Add Grafana YUM repository
+- name: Ensure Grafana repo exists (RedHat only)
   copy:
     dest: /etc/yum.repos.d/grafana.repo
     content: |
@@ -14,28 +14,31 @@
       gpgkey=https://packages.grafana.com/gpg.key
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+  when: ansible_os_family == "RedHat"
 
 - name: Install Grafana
-  dnf:
+  package:
     name: grafana
     state: present
 
-- name: Install required packages
-  dnf:
+- name: Install dependencies (RedHat only)
+  package:
     name:
       - wget
       - policycoreutils-python-utils
+      - python3-firewall
     state: present
+  when: ansible_os_family == "RedHat"
 
-# Stop Grafana BEFORE provisioning
-- name: Stop Grafana service
+# Stop Grafana before provisioning
+- name: Stop Grafana service if exists
   systemd:
     name: grafana-server
     state: stopped
   ignore_errors: true
 
 # Create required directories
-- name: Create Grafana provisioning and dashboard directories
+- name: Create provisioning and dashboard directories
   file:
     path: "{{ item }}"
     state: directory
@@ -56,7 +59,7 @@
     group: grafana
     mode: "0644"
 
-# Dashboard provider
+# Dashboard provider config
 - name: Copy dashboard provider config
   copy:
     src: dashboards.yml
@@ -65,7 +68,7 @@
     group: grafana
     mode: "0644"
 
-# COPY dashboards instead of downloading
+# Copy dashboards
 - name: Deploy Grafana dashboards
   copy:
     src: "{{ item }}"
@@ -78,47 +81,65 @@
     - prometheus.json
     - blackbox.json
 
-# SELinux fixes
-- name: Set SELinux context for Grafana data
-  command: chcon -R -t grafana_var_lib_t /var/lib/grafana
-  when:
-    - ansible_os_family == "RedHat"
-    - ansible_selinux.status == "enabled"
+# # SELinux fixes (RedHat only)
+# - name: Set SELinux context for Grafana data 
+#   block:
+#     - name: Ensure SELinux is enforcing
+#       command: getenforce
+#       register: selinux_status
+#       changed_when: false
 
-- name: Allow Prometheus port 9090 in SELinux
-  command: semanage port -a -t http_port_t -p tcp 9090
-  register: prometheus_port
-  failed_when:
-    - prometheus_port.rc != 0
-    - "'already defined' not in prometheus_port.stderr"
-  changed_when: prometheus_port.rc == 0
-  when: ansible_selinux.status == "enabled"
+#     - name: Set SELinux context for Grafana data
+#       command: chcon -R -t grafana_var_lib_t /var/lib/grafana
+#       when: selinux_status.stdout == "Enforcing"
+#       ignore_errors: true
+#   when: ansible_os_family == "RedHat"
 
-- name: Allow Blackbox exporter port 9115 in SELinux
-  command: semanage port -a -t http_port_t -p tcp 9115
-  register: blackbox_port
-  failed_when:
-    - blackbox_port.rc != 0
-    - "'already defined' not in blackbox_port.stderr"
-  changed_when: blackbox_port.rc == 0
-  when: ansible_selinux.status == "enabled"
 
-- name: Allow Grafana outbound network access
-  seboolean:
-    name: httpd_can_network_connect
-    state: true
-    persistent: true
-  when: ansible_selinux.status == "enabled"
+# Firewalld and ports (RedHat only)
+- name: Ensure firewalld is installed and started
+  package:
+    name: firewalld
+    state: present
+  when: ansible_os_family == "RedHat"
 
-# Firewall
-- name: Open Prometheus port in firewall
-  firewalld:
+- name: Start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Open Prometheus port
+  ansible.posix.firewalld:
     port: 9090/tcp
-    permanent: true
+    permanent: yes
     state: enabled
-    immediate: true
+    immediate: yes
+  when: ansible_os_family == "RedHat"
 
-# Start Grafana
+- name: Open blackbox exporter port
+  ansible.posix.firewalld:
+    port: 9115/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Open Grafana port
+  ansible.posix.firewalld:
+    port: 3000/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ansible_os_family == "RedHat"
+
+# Reload firewalld (RedHat only)
+- name: Reload firewalld
+  command: firewall-cmd --reload
+  when: ansible_os_family == "RedHat"
+
+# Enable and start Grafana (Universal)
 - name: Enable and start Grafana
   systemd:
     name: grafana-server

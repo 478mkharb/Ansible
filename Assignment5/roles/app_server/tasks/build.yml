@@ -5,14 +5,14 @@
     dest: "{{ app_dir }}"
     version: "{{ app_branch }}"
     force: yes
-  become_user: "{{ app_user }}"
+  become: true
   tags: git
 
 - name: Build application
   command: mvn clean package -DskipTests
   args:
     chdir: "{{ app_dir }}"
-  become_user: "{{ app_user }}"
+  become: true
   environment:
     MAVEN_OPTS: "-Xmx512m"
   notify: restart application

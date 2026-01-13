@@ -5,3 +5,5 @@
 
 - include_tasks: ubuntu.yml
   when: ansible_os_family == "Debian"
+# Common tasks for all OS types
+
