@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        ANSIBLE_FORCE_COLOR = 'true'
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'mukesh',
+                    url: 'https://github.com/478mkharb/Ansible.git',
+                    credentialsId: 'github-pat'
+            }
+        }
+
+        stage('Verify Ansible') {
+            steps {
+                sh '''
+                  set -e
+                  ansible --version
+                '''
+            }
+        }
+
+        stage('Syntax Check') {
+            steps {
+                dir('Assignment5') {
+                    sh '''
+                      ansible-playbook site.yml \
+                        -i inventory/hosts.yml \
+                        --syntax-check
+                    '''
+                }
+            }
+        }
+
+        
+        stage('Apply Playbook') {
+            steps {
+                dir('Assignment5') {
+                    sh '''
+                      ansible-playbook site.yml \
+                        -i inventory/hosts.yml \
+                        -f 5
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Ansible deployment completed successfully'
+        }
+        failure {
+            echo '❌ Ansible deployment failed — check console logs'
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
