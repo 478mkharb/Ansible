@@ -1,0 +1,3 @@
+prometheus_config_dir: /etc/prometheus
+grafana_provisioning_dir: /etc/grafana/provisioning
+grafana_dashboard_dir: "{{ grafana_provisioning_dir }}/dashboards"

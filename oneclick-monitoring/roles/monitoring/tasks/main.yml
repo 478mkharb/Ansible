@@ -1,0 +1,33 @@
+- import_tasks: secrets.yml
+
+- name: Install Prometheus, Grafana, Alertmanager
+  package:
+    name:
+      - prometheus
+      - grafana
+      - alertmanager
+    state: present
+
+- name: Configure Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+  notify: Restart Prometheus
+
+- name: Configure Alertmanager
+  template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+  notify: Restart Alertmanager
+
+- name: Configure Grafana datasource
+  template:
+    src: grafana-datasource.yml.j2
+    dest: "{{ grafana_provisioning_dir }}/datasources/prometheus.yml"
+  notify: Restart Grafana
+
+- name: Copy Grafana dashboards
+  copy:
+    src: dashboards/
+    dest: "{{ grafana_dashboard_dir }}/"
+  notify: Restart Grafana

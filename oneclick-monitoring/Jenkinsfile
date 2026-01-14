@@ -1,0 +1,25 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps { git branch: 'main', url: 'https://github.com/your-org/oneclick-monitoring.git' }
+    }
+
+    stage('Lint') {
+      steps { sh 'ansible-lint roles/' }
+    }
+
+    stage('Syntax Check') {
+      steps { sh 'ansible-playbook deploy.yml --syntax-check' }
+    }
+
+    stage('Dry Run') {
+      steps { sh 'ansible-playbook deploy.yml --check' }
+    }
+
+    stage('Deploy') {
+      steps { sh 'ansible-playbook deploy.yml' }
+    }
+  }
+}
