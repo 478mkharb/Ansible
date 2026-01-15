@@ -1,6 +1,4 @@
+# roles/monitoring/defaults/main.yml
 prometheus_version: "2.51.0"
-grafana_version: "10.4.1"
-alertmanager_version: "0.27.0"
-
-monitoring_user: prometheus
-monitoring_dir: /opt/monitoring
+alertmanager_version: "0.25.0"
+monitoring_dir: "/opt/monitoring"

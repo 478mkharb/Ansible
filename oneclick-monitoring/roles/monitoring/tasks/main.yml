@@ -31,13 +31,15 @@
 
 - name: Symlink Prometheus binaries
   file:
-    src: "{{ monitoring_dir }}/prometheus-2.50.0.linux-amd64/{{ item }}"
+    src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
+    mode: '0755'
   loop:
     - prometheus
     - promtool
   become: true
+
 
 - name: Deploy Prometheus config
   template:
@@ -62,13 +64,15 @@
 
 - name: Symlink Alertmanager binaries
   file:
-    src: "{{ monitoring_dir }}/alertmanager-0.25.0.linux-amd64/{{ item }}"
+    src: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
+    mode: '0755'
   loop:
     - alertmanager
     - amtool
   become: true
+
 
 - name: Deploy Alertmanager config
   template:
