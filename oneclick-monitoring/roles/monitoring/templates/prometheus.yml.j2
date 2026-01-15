@@ -1,4 +1,8 @@
 scrape_configs:
   - job_name: 'k8s-node'
     static_configs:
-      - targets: ['{{ hostvars["k8s"].inventory_hostname }}:9100']
+      - targets:
+{% for host in groups['kubernetes'] %}
+  - "{{ hostvars[host].ansible_host }}:9100"
+{% endfor %}
+
