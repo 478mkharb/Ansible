@@ -1,13 +1,19 @@
-# Install basic packages
+---
+# Variables assumed in defaults/main.yml
+# prometheus_version: "2.50.0"
+# alertmanager_version: "0.25.0"
+# monitoring_dir: "/opt/monitoring"
+
+# ---------------- Basic Packages ----------------
 - name: Install required packages
   package:
     name:
       - curl
       - tar
+      - wget
     state: present
   become: true
 
-# Create monitoring directory
 - name: Create monitoring directory
   file:
     path: "{{ monitoring_dir }}"
@@ -18,15 +24,17 @@
 # ---------------- Prometheus ----------------
 - name: Download Prometheus
   get_url:
-    url: https://github.com/prometheus/prometheus/releases/download/v2.50.0/prometheus-2.50.0.linux-amd64.tar.gz
-    dest: /tmp/prometheus.tar.gz
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/prometheus.tar.gz"
+    mode: '0644'
   become: true
 
 - name: Extract Prometheus
   unarchive:
-    src: /tmp/prometheus.tar.gz
+    src: "/tmp/prometheus.tar.gz"
     dest: "{{ monitoring_dir }}"
     remote_src: yes
+    creates: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64"
   become: true
 
 - name: Symlink Prometheus binaries
@@ -34,12 +42,12 @@
     src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
+    force: yes
     mode: '0755'
   loop:
     - prometheus
     - promtool
   become: true
-
 
 - name: Deploy Prometheus config
   template:
@@ -51,15 +59,17 @@
 # ---------------- Alertmanager ----------------
 - name: Download Alertmanager
   get_url:
-    url: https://github.com/prometheus/alertmanager/releases/download/v0.25.0/alertmanager-0.25.0.linux-amd64.tar.gz
-    dest: /tmp/alertmanager.tar.gz
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/alertmanager.tar.gz"
+    mode: '0644'
   become: true
 
 - name: Extract Alertmanager
   unarchive:
-    src: /tmp/alertmanager.tar.gz
+    src: "/tmp/alertmanager.tar.gz"
     dest: "{{ monitoring_dir }}"
     remote_src: yes
+    creates: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64"
   become: true
 
 - name: Symlink Alertmanager binaries
@@ -67,12 +77,12 @@
     src: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
+    force: yes
     mode: '0755'
   loop:
     - alertmanager
     - amtool
   become: true
-
 
 - name: Deploy Alertmanager config
   template:
