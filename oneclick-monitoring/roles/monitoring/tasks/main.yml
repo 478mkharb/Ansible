@@ -1,10 +1,14 @@
 - import_tasks: secrets.yml
 
+# ---------------- Basic Packages ----------------
 - name: Install required packages
   package:
     name:
       - curl
       - tar
+      - wget
+      - apt-transport-https
+      - software-properties-common
     state: present
   become: true
 
@@ -16,6 +20,30 @@
   become: true
 
 # ---------------- Prometheus ----------------
+- name: Download Prometheus
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/prometheus.tar.gz"
+  become: true
+
+- name: Extract Prometheus
+  unarchive:
+    src: /tmp/prometheus.tar.gz
+    dest: /opt
+    remote_src: yes
+    creates: "/opt/prometheus-{{ prometheus_version }}.linux-amd64"
+  become: true
+
+- name: Symlink Prometheus binaries
+  file:
+    src: "/opt/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  loop:
+    - prometheus
+    - promtool
+  become: true
+
 - name: Deploy Prometheus config
   template:
     src: prometheus.yml.j2
@@ -24,6 +52,30 @@
   become: true
 
 # ---------------- Alertmanager ----------------
+- name: Download Alertmanager
+  get_url:
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/alertmanager.tar.gz"
+  become: true
+
+- name: Extract Alertmanager
+  unarchive:
+    src: /tmp/alertmanager.tar.gz
+    dest: /opt
+    remote_src: yes
+    creates: "/opt/alertmanager-{{ alertmanager_version }}.linux-amd64"
+  become: true
+
+- name: Symlink Alertmanager binaries
+  file:
+    src: "/opt/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  loop:
+    - alertmanager
+    - amtool
+  become: true
+
 - name: Deploy Alertmanager config
   template:
     src: alertmanager.yml.j2
@@ -32,24 +84,54 @@
   become: true
 
 # ---------------- Grafana ----------------
-
-# 1️⃣ Install Grafana
-- name: Install Grafana (Ubuntu/Debian)
-  apt:
-    name: grafana
+# Ubuntu/Debian Installation
+- name: Add Grafana GPG key
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
     state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Add Grafana APT repository
+  apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"
+    state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Update apt cache
+  apt:
     update_cache: yes
   become: true
   when: ansible_os_family == "Debian"
 
-- name: Install Grafana (RHEL/CentOS)
+- name: Install Grafana (Debian)
+  apt:
+    name: grafana
+    state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+# RHEL/CentOS Installation
+- name: Add Grafana YUM repository
+  yum_repository:
+    name: grafana
+    description: Grafana OSS
+    baseurl: https://packages.grafana.com/oss/rpm
+    gpgcheck: yes
+    gpgkey: https://packages.grafana.com/gpg.key
+    enabled: yes
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Install Grafana (RHEL)
   yum:
     name: grafana
     state: present
   become: true
   when: ansible_os_family == "RedHat"
 
-# 2️⃣ Ensure Grafana provisioning directories exist
+# Ensure provisioning directory exists
 - name: Create Grafana provisioning directory
   file:
     path: /etc/grafana/provisioning/datasources
@@ -59,7 +141,7 @@
     mode: '0755'
   become: true
 
-# 3️⃣ Deploy Grafana datasource config
+# Deploy Grafana datasource template
 - name: Deploy Grafana provisioning
   template:
     src: grafana.yml.j2
