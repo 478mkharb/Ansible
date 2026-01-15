@@ -1,14 +1,13 @@
-plugin: aws_ec2
+plugin: amazon.aws.aws_ec2
 regions:
   - ap-south-1
 filters:
-  tag:Project: oneclick-monitoring
+  "tag:Project": "oneclick-monitoring"
 keyed_groups:
   - key: tags.Role
     prefix: ""
     separator: ""
-hostnames:
-  - public_dns_name
+hostname_variable: public_dns_name
 compose:
   ansible_user: ubuntu
   ansible_ssh_private_key_file: /var/lib/jenkins/.ssh/server3.pem
