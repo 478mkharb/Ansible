@@ -2,20 +2,37 @@ pipeline {
   agent any
 
   stages {
-    stage('Checkout') {
-      steps { git branch: 'mukesh', url: 'https://github.com/478mkharb/Ansible.git' }
+
+    stage('Debug') {
+      steps {
+        sh '''
+          echo "Workspace:"
+          pwd
+          echo "Files:"
+          ls -l
+          echo "Searching deploy.yml:"
+          find . -name deploy.yml
+        '''
+      }
     }
 
     stage('Syntax Check') {
-      steps { sh 'ansible-playbook deploy.yml --syntax-check' }
+      steps {
+        sh 'ansible-playbook ./deploy.yml --syntax-check'
+      }
     }
 
     stage('Dry Run') {
-      steps { sh 'ansible-playbook deploy.yml --check' }
+      steps {
+        sh 'ansible-playbook ./deploy.yml --check'
+      }
     }
 
     stage('Deploy') {
-      steps { sh 'ansible-playbook deploy.yml' }
+      steps {
+        sh 'ansible-playbook ./deploy.yml'
+      }
     }
+
   }
 }
