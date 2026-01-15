@@ -1,10 +1,12 @@
 all:
   children:
-    monitoring:
-      hosts:
-        ec2-monitoring.ap-south-1.compute.amazonaws.com:
-          ansible_user: ubuntu
     k8s:
       hosts:
-        ec2-k8s.ap-south-1.compute.amazonaws.com:
+        ec2-k8s-node-public-dns:
           ansible_user: ubuntu
+          ansible_ssh_private_key_file: /var/lib/jenkins/.ssh/server3.pem
+    monitoring:
+      hosts:
+        ec2-monitoring-node-public-dns:
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: /var/lib/jenkins/.ssh/server3.pem
