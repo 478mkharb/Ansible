@@ -1,4 +1,12 @@
-# roles/monitoring/defaults/main.yml
-prometheus_version: "2.51.0"
-alertmanager_version: "0.25.0"
-monitoring_dir: "/opt/monitoring"
+# Default variables for monitoring role
+
+monitoring_dir: /opt/monitoring
+prometheus_version: 2.50.0
+alertmanager_version: 0.25.0
+grafana_version: latest
+
+# Slack webhook (optional, avoid template failures)
+slack_webhook: ""
+
+# Prometheus scrape targets for Kubernetes nodes
+k8s_group_name: "kubernetes"
