@@ -3,7 +3,7 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps { git branch: 'main', url: 'https://github.com/478mkharb/Ansible.git' }
+      steps { git branch: 'mukesh', url: 'https://github.com/478mkharb/Ansible.git' }
     }
 
     stage('Lint') {
