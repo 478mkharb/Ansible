@@ -1,17 +1,13 @@
-- import_tasks: secrets.yml
-
-# ---------------- Basic Packages ----------------
+# Install basic packages
 - name: Install required packages
   package:
     name:
       - curl
       - tar
-      - wget
-      - apt-transport-https
-      - software-properties-common
     state: present
   become: true
 
+# Create monitoring directory
 - name: Create monitoring directory
   file:
     path: "{{ monitoring_dir }}"
@@ -22,21 +18,20 @@
 # ---------------- Prometheus ----------------
 - name: Download Prometheus
   get_url:
-    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/prometheus.tar.gz"
+    url: https://github.com/prometheus/prometheus/releases/download/v2.50.0/prometheus-2.50.0.linux-amd64.tar.gz
+    dest: /tmp/prometheus.tar.gz
   become: true
 
 - name: Extract Prometheus
   unarchive:
     src: /tmp/prometheus.tar.gz
-    dest: /opt
+    dest: "{{ monitoring_dir }}"
     remote_src: yes
-    creates: "/opt/prometheus-{{ prometheus_version }}.linux-amd64"
   become: true
 
 - name: Symlink Prometheus binaries
   file:
-    src: "/opt/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    src: "{{ monitoring_dir }}/prometheus-2.50.0.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
   loop:
@@ -54,21 +49,20 @@
 # ---------------- Alertmanager ----------------
 - name: Download Alertmanager
   get_url:
-    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/alertmanager.tar.gz"
+    url: https://github.com/prometheus/alertmanager/releases/download/v0.25.0/alertmanager-0.25.0.linux-amd64.tar.gz
+    dest: /tmp/alertmanager.tar.gz
   become: true
 
 - name: Extract Alertmanager
   unarchive:
     src: /tmp/alertmanager.tar.gz
-    dest: /opt
+    dest: "{{ monitoring_dir }}"
     remote_src: yes
-    creates: "/opt/alertmanager-{{ alertmanager_version }}.linux-amd64"
   become: true
 
 - name: Symlink Alertmanager binaries
   file:
-    src: "/opt/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
+    src: "{{ monitoring_dir }}/alertmanager-0.25.0.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     state: link
   loop:
@@ -84,54 +78,28 @@
   become: true
 
 # ---------------- Grafana ----------------
-# Ubuntu/Debian Installation
 - name: Add Grafana GPG key
   apt_key:
     url: https://packages.grafana.com/gpg.key
     state: present
   become: true
-  when: ansible_os_family == "Debian"
 
 - name: Add Grafana APT repository
   apt_repository:
-    repo: "deb https://packages.grafana.com/oss/deb stable main"
-    state: present
+    repo: deb https://packages.grafana.com/oss/deb stable main
   become: true
-  when: ansible_os_family == "Debian"
 
 - name: Update apt cache
   apt:
     update_cache: yes
   become: true
-  when: ansible_os_family == "Debian"
 
-- name: Install Grafana (Debian)
+- name: Install Grafana
   apt:
     name: grafana
     state: present
   become: true
-  when: ansible_os_family == "Debian"
 
-# RHEL/CentOS Installation
-- name: Add Grafana YUM repository
-  yum_repository:
-    name: grafana
-    description: Grafana OSS
-    baseurl: https://packages.grafana.com/oss/rpm
-    gpgcheck: yes
-    gpgkey: https://packages.grafana.com/gpg.key
-    enabled: yes
-  become: true
-  when: ansible_os_family == "RedHat"
-
-- name: Install Grafana (RHEL)
-  yum:
-    name: grafana
-    state: present
-  become: true
-  when: ansible_os_family == "RedHat"
-
-# Ensure provisioning directory exists
 - name: Create Grafana provisioning directory
   file:
     path: /etc/grafana/provisioning/datasources
@@ -141,8 +109,7 @@
     mode: '0755'
   become: true
 
-# Deploy Grafana datasource template
-- name: Deploy Grafana provisioning
+- name: Deploy Grafana datasource config
   template:
     src: grafana.yml.j2
     dest: /etc/grafana/provisioning/datasources/datasource.yml
