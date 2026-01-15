@@ -6,26 +6,63 @@
       - curl
       - tar
     state: present
+  become: true
 
 - name: Create monitoring directory
   file:
     path: "{{ monitoring_dir }}"
     state: directory
+    mode: '0755'
+  become: true
 
+# ---------------- Prometheus ----------------
 - name: Deploy Prometheus config
   template:
     src: prometheus.yml.j2
     dest: "{{ monitoring_dir }}/prometheus.yml"
   notify: Restart Prometheus
+  become: true
 
+# ---------------- Alertmanager ----------------
 - name: Deploy Alertmanager config
   template:
     src: alertmanager.yml.j2
     dest: "{{ monitoring_dir }}/alertmanager.yml"
   notify: Restart Alertmanager
+  become: true
 
+# ---------------- Grafana ----------------
+
+# 1️⃣ Install Grafana
+- name: Install Grafana (Ubuntu/Debian)
+  apt:
+    name: grafana
+    state: present
+    update_cache: yes
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Install Grafana (RHEL/CentOS)
+  yum:
+    name: grafana
+    state: present
+  become: true
+  when: ansible_os_family == "RedHat"
+
+# 2️⃣ Ensure Grafana provisioning directories exist
+- name: Create Grafana provisioning directory
+  file:
+    path: /etc/grafana/provisioning/datasources
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+# 3️⃣ Deploy Grafana datasource config
 - name: Deploy Grafana provisioning
   template:
     src: grafana.yml.j2
     dest: /etc/grafana/provisioning/datasources/datasource.yml
   notify: Restart Grafana
+  become: true
