@@ -1,123 +1,58 @@
----
-# ---------------- Basic packages ----------------
-- name: Install required packages
-  package:
-    name:
-      - curl
-      - tar
-    state: present
-  become: true
+- include_vars: secrets.yml
 
-- name: Create monitoring directory
-  file:
+- apt:
+    name: [curl, tar]
+    update_cache: yes
+
+- file:
     path: "{{ monitoring_dir }}"
     state: directory
-    mode: '0755'
-  become: true
 
-# ---------------- Prometheus ----------------
-- name: Download Prometheus
-  get_url:
-    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+# Prometheus
+- get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
     dest: /tmp/prometheus.tar.gz
-    mode: '0644'
-  become: true
 
-- name: Extract Prometheus
-  unarchive:
+- unarchive:
     src: /tmp/prometheus.tar.gz
     dest: "{{ monitoring_dir }}"
     remote_src: yes
-  become: true
 
-- name: Symlink Prometheus binaries
-  file:
-    src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
+- file:
+    src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+    dest: /usr/local/bin/prometheus
     state: link
-    mode: '0755'
-    force: yes
-  loop:
-    - prometheus
-    - promtool
-  become: true
 
-- name: Deploy Prometheus config
-  template:
+- template:
     src: prometheus.yml.j2
     dest: "{{ monitoring_dir }}/prometheus.yml"
-  notify: Restart Prometheus
-  become: true
 
-# ---------------- Alertmanager ----------------
-- name: Download Alertmanager
-  get_url:
-    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+# Alertmanager
+- get_url:
+    url: https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz
     dest: /tmp/alertmanager.tar.gz
-    mode: '0644'
-  become: true
 
-- name: Extract Alertmanager
-  unarchive:
+- unarchive:
     src: /tmp/alertmanager.tar.gz
     dest: "{{ monitoring_dir }}"
     remote_src: yes
-  become: true
 
-- name: Symlink Alertmanager binaries
-  file:
-    src: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
+- file:
+    src: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
+    dest: /usr/local/bin/alertmanager
     state: link
-    mode: '0755'
-    force: yes
-  loop:
-    - alertmanager
-    - amtool
-  become: true
 
-- name: Deploy Alertmanager config
-  template:
+- template:
     src: alertmanager.yml.j2
     dest: "{{ monitoring_dir }}/alertmanager.yml"
-  notify: Restart Alertmanager
-  become: true
 
-# ---------------- Grafana ----------------
-- name: Add Grafana GPG key
-  apt_key:
+# Grafana
+- apt_key:
     url: https://packages.grafana.com/gpg.key
-    state: present
-  become: true
 
-- name: Add Grafana APT repository
-  apt_repository:
+- apt_repository:
     repo: deb https://packages.grafana.com/oss/deb stable main
-  become: true
 
-- name: Update apt cache
-  apt:
-    update_cache: yes
-  become: true
-
-- name: Install Grafana
-  apt:
+- apt:
     name: grafana
     state: present
-  become: true
-
-- name: Create Grafana provisioning directory
-  file:
-    path: /etc/grafana/provisioning/datasources
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  become: true
-
-- name: Deploy Grafana datasource config
-  template:
-    src: grafana.yml.j2
-    dest: /etc/grafana/provisioning/datasources/datasource.yml
-  notify: Restart Grafana
-  become: true

@@ -1,16 +1,8 @@
-global:
-  resolve_timeout: 5m
-  {% if slack_webhook != "" %}
-  slack_api_url: "{{ slack_webhook }}"
-  {% endif %}
-
 route:
-  receiver: 'slack-notifications'
+  receiver: slack
 
 receivers:
-  - name: 'slack-notifications'
-    {% if slack_webhook != "" %}
+  - name: slack
     slack_configs:
-      - channel: '#alerts'
-        send_resolved: true
-    {% endif %}
+      - api_url: "{{ slack_webhook }}"
+        channel: "#alerts"

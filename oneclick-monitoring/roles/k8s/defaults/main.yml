@@ -1,4 +1,2 @@
-kubernetes_version: "1.29.0"
-pod_network_cidr: "192.168.0.0/16"
-
-node_exporter_version: "1.7.0"
+kubernetes_version: "1.29"
+pod_network_cidr: "10.244.0.0/16"

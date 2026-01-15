@@ -2,16 +2,7 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: 'kubernetes'
     static_configs:
-      - targets: ['localhost:9090']
-
-{% if groups[k8s_group_name] is defined %}
-  - job_name: 'kubernetes-nodes'
-    static_configs:
-      - targets: [
-        {% for host in groups[k8s_group_name] %}
-          "{{ hostvars[host].ansible_host }}:9100"{% if not loop.last %}, {% endif %}
-        {% endfor %}
-      ]
-{% endif %}
+      - targets:
+        - "{{ groups['kubernetes'][0] }}:9100"

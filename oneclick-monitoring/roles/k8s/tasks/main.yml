@@ -1,140 +1,65 @@
----
-# ---------------- System prep ----------------
-- name: Disable swap
-  shell: |
-    swapoff -a
-    sed -i '/ swap / s/^/#/' /etc/fstab
-  become: true
+# Disable swap
+- command: swapoff -a
+- replace:
+    path: /etc/fstab
+    regexp: '^([^#].*swap.*)$'
+    replace: '# \1'
 
-- name: Load kernel modules
-  shell: |
-    modprobe overlay
-    modprobe br_netfilter
-  become: true
-
-- name: Set sysctl params
-  sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    state: present
-    reload: yes
-  loop:
-    - { name: net.bridge.bridge-nf-call-iptables, value: 1 }
-    - { name: net.ipv4.ip_forward, value: 1 }
-  become: true
-
-# ---------------- Docker ----------------
-- name: Install Docker
-  apt:
-    name: docker.io
-    state: present
+# Install dependencies
+- apt:
+    name:
+      - curl
+      - apt-transport-https
+      - ca-certificates
     update_cache: yes
-  become: true
 
-- name: Enable Docker
-  systemd:
-    name: docker
-    enabled: true
-    state: started
-  become: true
-
-# ---------------- Kubernetes packages ----------------
-- name: Add Kubernetes apt key
-  apt_key:
-    url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+# Install containerd
+- apt:
+    name: containerd
     state: present
-  become: true
 
-- name: Add Kubernetes repo
-  apt_repository:
-    repo: deb https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
-    state: present
-  become: true
+- command: containerd config default
+  register: containerd_cfg
+  changed_when: false
 
-- name: Install Kubernetes components
-  apt:
+- copy:
+    dest: /etc/containerd/config.toml
+    content: "{{ containerd_cfg.stdout }}"
+  notify: Restart containerd
+
+# Kubernetes repo
+- get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /usr/share/keyrings/k8s.gpg
+
+- apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/k8s.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+
+# Install k8s components
+- apt:
     name:
       - kubelet
       - kubeadm
       - kubectl
     state: present
-    update_cache: yes
-  become: true
 
-- name: Hold Kubernetes packages
-  apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: hold
-  become: true
-
-# ---------------- Cluster init ----------------
-- name: Initialize Kubernetes cluster
-  command: >
-    kubeadm init
-    --pod-network-cidr={{ pod_network_cidr }}
+# Init cluster
+- command: kubeadm init --pod-network-cidr={{ pod_network_cidr }}
   args:
     creates: /etc/kubernetes/admin.conf
-  become: true
 
-- name: Setup kubeconfig for ubuntu user
-  shell: |
-    mkdir -p /home/ubuntu/.kube
-    cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
-    chown ubuntu:ubuntu /home/ubuntu/.kube/config
-  become: true
+# Kubeconfig
+- file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
 
-- name: Install Calico network
-  command: >
-    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-  become: true
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-
-# ---------------- Allow single-node scheduling ----------------
-- name: Remove master taint
-  command: >
-    kubectl taint nodes --all node-role.kubernetes.io/control-plane-
-  become: true
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-
-# ---------------- Node Exporter ----------------
-- name: Download Node Exporter
-  get_url:
-    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    dest: /tmp/node_exporter.tar.gz
-  become: true
-
-- name: Extract Node Exporter
-  unarchive:
-    src: /tmp/node_exporter.tar.gz
-    dest: /usr/local/bin
+- copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
     remote_src: yes
-    extra_opts: [--strip-components=1]
-  become: true
 
-- name: Create Node Exporter service
-  copy:
-    dest: /etc/systemd/system/node_exporter.service
-    content: |
-      [Unit]
-      Description=Node Exporter
-      After=network.target
-
-      [Service]
-      ExecStart=/usr/local/bin/node_exporter
-      Restart=always
-
-      [Install]
-      WantedBy=multi-user.target
-  become: true
-
-- name: Start Node Exporter
-  systemd:
-    name: node_exporter
-    enabled: true
-    state: started
-  become: true
+# Flannel network
+- become_user: ubuntu
+  command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
