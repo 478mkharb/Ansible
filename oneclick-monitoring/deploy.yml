@@ -1,11 +1,12 @@
-- name: Deploy Monitoring Stack
-  hosts: monitoring
-  become: true
-  roles:
-    - monitoring
-
+---
 - name: Deploy K3s Kubernetes Cluster
   hosts: kubernetes
   become: true
   roles:
     - k8s
+
+- name: Deploy Monitoring Stack
+  hosts: monitoring
+  become: true
+  roles:
+    - monitoring

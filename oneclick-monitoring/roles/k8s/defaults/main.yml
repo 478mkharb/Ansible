@@ -1,2 +1,2 @@
-kubernetes_version: "1.29"
-pod_network_cidr: "10.244.0.0/16"
+k3s_version: v1.29.2+k3s1
+k3s_install_url: https://get.k3s.io

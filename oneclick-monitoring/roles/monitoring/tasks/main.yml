@@ -1,58 +1,74 @@
-- include_vars: secrets.yml
-
-- apt:
-    name: [curl, tar]
+---
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - tar
+      - apt-transport-https
     update_cache: yes
 
-- file:
+# Install node_exporter on ALL hosts
+- import_tasks: node_exporter.yml
+
+# Prometheus only on monitoring host
+- name: Create monitoring directory
+  file:
     path: "{{ monitoring_dir }}"
     state: directory
+    mode: '0755'
 
-# Prometheus
-- get_url:
-    url: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+- name: Download Prometheus
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
     dest: /tmp/prometheus.tar.gz
 
-- unarchive:
+- name: Extract Prometheus
+  unarchive:
     src: /tmp/prometheus.tar.gz
     dest: "{{ monitoring_dir }}"
     remote_src: yes
 
-- file:
-    src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
-    dest: /usr/local/bin/prometheus
+- name: Symlink Prometheus binaries
+  file:
+    src: "{{ monitoring_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
     state: link
+    mode: '0755'
+  loop:
+    - prometheus
+    - promtool
 
-- template:
+- name: Deploy Prometheus config
+  template:
     src: prometheus.yml.j2
     dest: "{{ monitoring_dir }}/prometheus.yml"
+  notify: Restart Prometheus
 
-# Alertmanager
-- get_url:
-    url: https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz
-    dest: /tmp/alertmanager.tar.gz
+- name: Create Prometheus service
+  copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      After=network.target
 
-- unarchive:
-    src: /tmp/alertmanager.tar.gz
-    dest: "{{ monitoring_dir }}"
-    remote_src: yes
+      [Service]
+      ExecStart=/usr/local/bin/prometheus \
+        --config.file={{ monitoring_dir }}/prometheus.yml \
+        --storage.tsdb.path={{ monitoring_dir }}/data
 
-- file:
-    src: "{{ monitoring_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
-    dest: /usr/local/bin/alertmanager
-    state: link
-
-- template:
-    src: alertmanager.yml.j2
-    dest: "{{ monitoring_dir }}/alertmanager.yml"
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart Prometheus
 
 # Grafana
-- apt_key:
-    url: https://packages.grafana.com/gpg.key
-
-- apt_repository:
-    repo: deb https://packages.grafana.com/oss/deb stable main
-
-- apt:
+- name: Install Grafana
+  apt:
     name: grafana
     state: present
+
+- name: Deploy Grafana datasource
+  template:
+    src: grafana-datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+  notify: Restart Grafana

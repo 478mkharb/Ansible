@@ -2,13 +2,16 @@
   systemd:
     name: prometheus
     state: restarted
-
-- name: Restart Alertmanager
-  systemd:
-    name: alertmanager
-    state: restarted
+    enabled: true
 
 - name: Restart Grafana
   systemd:
     name: grafana-server
     state: restarted
+    enabled: true
+
+- name: Restart Node Exporter
+  systemd:
+    name: node_exporter
+    state: restarted
+    enabled: true

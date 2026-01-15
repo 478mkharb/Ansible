@@ -1,4 +1,5 @@
-- name: Restart containerd
+- name: Restart k3s
   systemd:
-    name: containerd
+    name: k3s
     state: restarted
+    enabled: true
