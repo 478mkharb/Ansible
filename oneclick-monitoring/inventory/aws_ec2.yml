@@ -3,8 +3,13 @@ regions:
   - ap-south-1
 
 filters:
-  tag:Project: oneclick-monitoring
+  tag:Role: monitoring
+  instance-state-name: running
 
 keyed_groups:
   - key: tags.Role
     prefix: ""
+    separator: ""
+
+compose:
+  ansible_host: public_dns_name

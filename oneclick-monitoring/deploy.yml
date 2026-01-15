@@ -1,5 +1,7 @@
 - name: Deploy Monitoring Stack
   hosts: monitoring
-  become: yes
+  become: true
+  gather_facts: true
+
   roles:
     - monitoring

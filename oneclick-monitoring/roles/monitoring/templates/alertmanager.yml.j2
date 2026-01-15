@@ -1,15 +1,8 @@
-global:
-  resolve_timeout: 5m
-
 route:
-  receiver: slack
-  group_by: ['alertname']
-  group_wait: 30s
-  group_interval: 5m
-  repeat_interval: 4h
+  receiver: slack-notifications
 
 receivers:
-- name: slack
+- name: slack-notifications
   slack_configs:
-  - api_url: "{{ slack_webhook_url }}"
-    channel: "#monitoring-alerts"
+    - api_url: "{{ slack_webhook.webhook_url }}"
+      channel: "#alerts"
