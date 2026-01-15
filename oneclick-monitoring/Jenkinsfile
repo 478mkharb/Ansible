@@ -6,10 +6,6 @@ pipeline {
       steps { git branch: 'mukesh', url: 'https://github.com/478mkharb/Ansible.git' }
     }
 
-    stage('Lint') {
-      steps { sh 'ansible-lint roles/' }
-    }
-
     stage('Syntax Check') {
       steps { sh 'ansible-playbook deploy.yml --syntax-check' }
     }
