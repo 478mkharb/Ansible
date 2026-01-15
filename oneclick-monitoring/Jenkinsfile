@@ -2,28 +2,37 @@ pipeline {
   agent any
 
   stages {
-    stage('Lint') {
+
+    stage('Debug') {
       steps {
-        sh 'ansible-lint roles/ || true'
+        sh '''
+          echo "Workspace:"
+          pwd
+          echo "Repo contents:"
+          ls -l
+          echo "Find deploy.yml:"
+          find . -name deploy.yml
+        '''
       }
     }
 
     stage('Syntax Check') {
       steps {
-        sh 'ansible-playbook deploy.yml --syntax-check'
+        sh 'ansible-playbook oneclick-monitoring/deploy.yml --syntax-check'
       }
     }
 
     stage('Dry Run') {
       steps {
-        sh 'ansible-playbook deploy.yml --check'
+        sh 'ansible-playbook oneclick-monitoring/deploy.yml --check'
       }
     }
 
     stage('Deploy') {
       steps {
-        sh 'ansible-playbook deploy.yml'
+        sh 'ansible-playbook oneclick-monitoring/deploy.yml'
       }
     }
+
   }
 }
