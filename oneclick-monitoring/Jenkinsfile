@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    environment {
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+    }
+
+    stages {
+
+        stage('Checkout Repo') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/478mkharb/Ansible.git'
+            }
+        }
+
+        stage('Run OneClick Monitoring') {
+            steps {
+                sh '''
+                cd oneclick-monitoring
+                ansible-playbook \
+                  -i inventory/aws_ec2.yml \
+                  site.yml
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Monitoring stack deployed successfully"
+        }
+        failure {
+            echo "❌ Monitoring deployment failed"
+        }
+    }
+}
+
