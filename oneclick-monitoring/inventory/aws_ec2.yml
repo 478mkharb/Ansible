@@ -16,6 +16,8 @@ hostnames:
 compose:
   ansible_host: public_ip_address
   ansible_user: ubuntu
-  
+
+vars:
+  ansible_python_interpreter: /usr/bin/python3 
 
 strict: False

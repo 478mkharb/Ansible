@@ -1,6 +1,4 @@
 ---
-- name: Install Helm if missing
-  include_tasks: helm_install.yml
 
 - name: Add prometheus Helm repo
   shell: |
