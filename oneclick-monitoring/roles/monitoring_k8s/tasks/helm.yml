@@ -5,14 +5,16 @@
     kind: Namespace
     name: monitoring
     state: present
-    kubeconfig: /var/lib/jenkins/.kube/config
+    kubeconfig: /root/.kube/config
+  become: true
 
-- name: Add prometheus-community Helm repo
+- name: Add prometheus Helm repo
   shell: |
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
     helm repo update
   args:
     executable: /bin/bash
+  become: true
 
 - name: Deploy kube-prometheus-stack
   community.kubernetes.helm:
@@ -22,5 +24,5 @@
     create_namespace: true
     wait: true
     timeout: 15m
-    kubeconfig: /var/lib/jenkins/.kube/config
-    values: "{{ lookup('template', 'values.yml.j2') | from_yaml }}"
+    kubeconfig: /root/.kube/config
+  become: true
