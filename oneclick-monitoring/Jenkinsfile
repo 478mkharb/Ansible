@@ -1,38 +1,24 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        ANSIBLE_HOST_KEY_CHECKING = 'False'
+  environment {
+    ANSIBLE_HOST_KEY_CHECKING = 'False'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/478mkharb/Ansible.git'
+      }
     }
 
-    stages {
-
-        stage('Checkout Repo') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/478mkharb/Ansible.git'
-            }
-        }
-
-        stage('Run OneClick Monitoring') {
-            steps {
-                sh '''
-                cd oneclick-monitoring
-                ansible-playbook \
-                  -i inventory/aws_ec2.yml \
-                  site.yml
-                '''
-            }
-        }
+    stage('Deploy Monitoring') {
+      steps {
+        sh '''
+          ansible-galaxy collection install kubernetes.core community.kubernetes
+          ansible-playbook -i oneclick-monitoring/inventory/aws_ec2.yml oneclick-monitoring/site.yml
+        '''
+      }
     }
-
-    post {
-        success {
-            echo "✅ Monitoring stack deployed successfully"
-        }
-        failure {
-            echo "❌ Monitoring deployment failed"
-        }
-    }
+  }
 }
-

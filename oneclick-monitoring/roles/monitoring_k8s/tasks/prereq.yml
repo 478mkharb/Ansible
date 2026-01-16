@@ -26,3 +26,29 @@
       - kubernetes
       - openshift
     state: present
+
+- name: Ensure .kube directory exists for jenkins
+  file:
+    path: /var/lib/jenkins/.kube
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: '0700'
+  become: true
+
+- name: Copy k3s kubeconfig for jenkins
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /var/lib/jenkins/.kube/config
+    owner: jenkins
+    group: jenkins
+    mode: '0600'
+    remote_src: yes
+  become: true
+
+- name: Fix kubeconfig server address
+  replace:
+    path: /var/lib/jenkins/.kube/config
+    regexp: 'https://127.0.0.1:6443'
+    replace: "https://{{ ansible_default_ipv4.address }}:6443"
+  become: true
