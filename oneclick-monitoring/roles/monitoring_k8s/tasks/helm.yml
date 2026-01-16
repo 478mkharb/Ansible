@@ -26,13 +26,18 @@
     executable: /bin/bash
   become: true
 
-- name: Deploy kube-prometheus-stack
-  community.kubernetes.helm:
-    name: monitoring
-    chart_ref: prometheus-community/kube-prometheus-stack
-    release_namespace: monitoring
-    create_namespace: true
-    wait: true
-    timeout: 15m
-    kubeconfig: /root/.kube/config
+- name: Render kube-prometheus-stack values file
+  ansible.builtin.template:
+    src: values.yml.j2
+    dest: /tmp/kube-prometheus-values.yml
+    mode: "0644"
+
+- name: Deploy kube-prometheus-stack with custom values
+  ansible.builtin.shell: |
+    helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+      --namespace monitoring \
+      --create-namespace \
+      -f /tmp/kube-prometheus-values.yml
+  args:
+    executable: /bin/bash
   become: true
