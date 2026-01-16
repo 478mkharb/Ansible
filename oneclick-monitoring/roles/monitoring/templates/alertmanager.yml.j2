@@ -1,8 +1,0 @@
-route:
-  receiver: slack
-
-receivers:
-  - name: slack
-    slack_configs:
-      - api_url: "{{ slack_webhook }}"
-        channel: "#alerts"

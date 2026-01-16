@@ -1,0 +1,17 @@
+---
+# roles/monitoring_k8s/tasks/main.yml
+
+- name: Ensure python3 and pip are installed
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: Install Kubernetes Python client
+  ansible.builtin.pip:
+    name: kubernetes
+    executable: pip3
+
+- name: Include Helm tasks
+  include_tasks: helm.yml

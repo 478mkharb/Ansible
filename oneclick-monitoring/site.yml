@@ -1,0 +1,8 @@
+---
+- hosts: k8s-node
+  become: true
+  vars:
+    monitoring_namespace: monitoring
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+  roles:
+    - monitoring_k8s

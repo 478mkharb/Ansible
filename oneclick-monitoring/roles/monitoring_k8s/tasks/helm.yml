@@ -1,0 +1,46 @@
+---
+- name: Create monitoring namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ monitoring_namespace }}"
+    state: present
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Add prometheus-community Helm repository
+  community.kubernetes.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+    state: present
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: Remove failed helm release only if status is failed
+  shell: |
+    STATUS=$(helm status monitoring -n {{ monitoring_namespace }} --output json 2>/dev/null | jq -r .info.status)
+    if [ "$STATUS" = "failed" ]; then
+      helm uninstall monitoring -n {{ monitoring_namespace }}
+    fi
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Deploy kube-prometheus-stack
+  community.kubernetes.helm:
+    name: monitoring
+    chart_ref: prometheus-community/kube-prometheus-stack
+    release_namespace: "{{ monitoring_namespace }}"
+    create_namespace: false
+    wait: true
+    timeout: 15m
+    kubeconfig: "{{ kubeconfig_path }}"
+    values: "{{ lookup('template', 'values.yml.j2') | from_yaml }}"
+
+- name: Wait until all pods in monitoring namespace are ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ monitoring_namespace }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  register: pods_status
+  until: pods_status.resources | selectattr('status.phase','equalto','Running') | list | length == pods_status.resources | length
+  retries: 20
+  delay: 30

@@ -1,3 +1,0 @@
-grafana_port: 3000
-prometheus_port: 9090
-alertmanager_port: 9093

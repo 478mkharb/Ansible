@@ -1,0 +1,36 @@
+---
+- name: Ensure python3 and pip are installed
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: Install Kubernetes Python client
+  pip:
+    name: kubernetes
+    executable: pip3
+
+- name: Check if Helm is installed
+  command: helm version --short
+  register: helm_check
+  ignore_errors: true
+
+- name: Install Helm (if not present)
+  ansible.builtin.get_url:
+    url: https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz
+    dest: /tmp/helm.tar.gz
+  when: helm_check.failed
+
+- name: Extract Helm
+  ansible.builtin.unarchive:
+    src: /tmp/helm.tar.gz
+    dest: /tmp
+    remote_src: yes
+  when: helm_check.failed
+
+- name: Move Helm binary
+  ansible.builtin.command: mv /tmp/linux-amd64/helm /usr/local/bin/helm
+  args:
+    creates: /usr/local/bin/helm
+  when: helm_check.failed
