@@ -1,4 +1,34 @@
 ---
+- name: Detect k3s kubeconfig
+  stat:
+    path: /etc/rancher/k3s/k3s.yaml
+  register: k3s_kubeconfig
+  become: true
+
+- name: Detect kubeadm kubeconfig
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_kubeconfig
+  become: true
+
+- name: Fail if no kubeconfig found
+  fail:
+    msg: >
+      Kubernetes kubeconfig not found.
+      Ensure Kubernetes (k3s or kubeadm) is installed before running monitoring role.
+  when:
+    - not k3s_kubeconfig.stat.exists
+    - not kubeadm_kubeconfig.stat.exists
+
+- name: Set kubeconfig source path
+  set_fact:
+    kubeconfig_src: >-
+      {{
+        '/etc/rancher/k3s/k3s.yaml'
+        if k3s_kubeconfig.stat.exists
+        else '/etc/kubernetes/admin.conf'
+      }}
+
 - name: Ensure root .kube directory exists
   file:
     path: /root/.kube
@@ -6,15 +36,15 @@
     mode: '0700'
   become: true
 
-- name: Copy k3s kubeconfig for root
+- name: Copy kubeconfig for root
   copy:
-    src: /etc/rancher/k3s/k3s.yaml
+    src: "{{ kubeconfig_src }}"
     dest: /root/.kube/config
-    remote_src: yes
+    remote_src: true
     mode: '0600'
   become: true
 
-- name: Fix kubeconfig server address
+- name: Fix kubeconfig server address (non-localhost)
   replace:
     path: /root/.kube/config
     regexp: 'https://127.0.0.1:6443'
