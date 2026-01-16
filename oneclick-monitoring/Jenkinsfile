@@ -1,24 +1,7 @@
-pipeline {
-  agent any
-
-  environment {
-    ANSIBLE_HOST_KEY_CHECKING = 'False'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        git 'https://github.com/478mkharb/Ansible.git'
-      }
-    }
-
-    stage('Deploy Monitoring') {
-      steps {
-        sh '''
-          ansible-galaxy collection install kubernetes.core community.kubernetes
-          ansible-playbook -i oneclick-monitoring/inventory/aws_ec2.yml oneclick-monitoring/site.yml
-        '''
-      }
-    }
+stage('Deploy Monitoring Stack') {
+  steps {
+    sh '''
+      ansible-playbook -i inventory/aws_ec2.yml site.yml
+    '''
   }
 }
