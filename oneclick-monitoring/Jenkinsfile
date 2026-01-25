@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     ANSIBLE_HOST_KEY_CHECKING = 'False'
+    AWS_DEFAULT_REGION = 'ap-south-1'
   }
 
   stages {
@@ -16,10 +17,16 @@ pipeline {
 
     stage('Deploy Monitoring') {
       steps {
-        sh '''
-          cd oneclick-monitoring
-          ansible-playbook -i inventory/aws_ec2.yml site.yml
-        '''
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'geeta_kharb'
+        ]]) {
+          sh '''
+            aws sts get-caller-identity
+            cd oneclick-monitoring
+            ansible-playbook -i inventory/aws_ec2.yml site.yml
+          '''
+        }
       }
     }
   }
