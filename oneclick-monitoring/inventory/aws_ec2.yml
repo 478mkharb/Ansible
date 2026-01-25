@@ -1,24 +1,23 @@
 plugin: amazon.aws.aws_ec2
+
 regions:
   - ap-south-1
 
+aws_profile: null
+
 filters:
-  "tag:Project": "oneclick-monitoring"
-  "tag:Role": "k8s-node"
+  tag:Project: oneclick-monitoring
+  tag:Role: k8s-node
 
 keyed_groups:
   - key: tags.Role
     prefix: ""
-    separator: ""
 
 hostnames:
-  - tag:Name
+  - public-ip-address
 
 compose:
   ansible_host: public_ip_address
   ansible_user: ubuntu
-
-vars:
-  ansible_python_interpreter: /usr/bin/python3 
 
 strict: False
