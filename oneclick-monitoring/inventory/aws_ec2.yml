@@ -4,6 +4,7 @@ regions:
 
 filters:
   "tag:Project": "oneclick-monitoring"
+  "tag:Role": "k8s-node"
 
 keyed_groups:
   - key: tags.Role
