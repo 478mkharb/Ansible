@@ -6,8 +6,8 @@ regions:
 aws_profile: null
 
 filters:
-  tag:Project: oneclick-monitoring
-  tag:Role: k8s-node
+  tag:Project: "oneclick-monitoring"
+  tag:Role: "k8s-node"
 
 keyed_groups:
   - key: tags.Role
