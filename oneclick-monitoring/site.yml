@@ -1,5 +1,5 @@
 ---
-- hosts: k8s-node
+- hosts: _k8s-node
   become: true
   vars:
     monitoring_namespace: monitoring
