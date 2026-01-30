@@ -4,8 +4,7 @@
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-
-  owners = ["099720109477"] # Canonical (official Ubuntu)
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
@@ -40,9 +39,9 @@ resource "aws_instance" "bastion" {
     Project = var.project
   }
 }
+
 ############################################
-# Monitoring EC2 instances
-# Prometheus + Grafana (HA - 2 instances)
+# Monitoring EC2 instances (Prometheus + Grafana)
 ############################################
 
 resource "aws_instance" "monitoring" {
@@ -50,7 +49,6 @@ resource "aws_instance" "monitoring" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type_monitoring
 
-  # Distribute across private subnets
   subnet_id = element(
     [aws_subnet.private_a.id, aws_subnet.private_b.id],
     count.index
