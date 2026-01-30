@@ -1,10 +1,13 @@
-- hosts: monitoring
+- name: Configure monitoring servers
+  hosts: monitoring
   become: true
   roles:
     - prometheus
     - grafana
+    - node_exporter
 
-- hosts: app
+- name: Configure application servers
+  hosts: app
   become: true
   roles:
     - nginx
