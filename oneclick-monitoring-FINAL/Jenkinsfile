@@ -45,7 +45,7 @@ pipeline {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
           sh '''
-            ansible-playbook site.yml
+            ansible-playbook site.yml -e "bastion_ip=$BASTION_IP"
           '''
         }
       }
