@@ -1,12 +1,24 @@
 pipeline {
   agent any
 
+  environment {
+    AWS_DEFAULT_REGION = 'ap-south-1'
+    ANSIBLE_HOST_KEY_CHECKING = 'False'
+  }
+
   stages {
+
+    stage('Checkout') {
+      steps {
+        git branch: 'mukesh',
+            url: 'git@github.com:478mkharb/Ansible.git'
+      }
+    }
 
     stage('Terraform Apply') {
       steps {
         sh '''
-          cd terraform
+          cd oneclick-monitoring-FINAL/terraform
           terraform init
           terraform apply -auto-approve
         '''
@@ -16,7 +28,7 @@ pipeline {
     stage('Configure Servers') {
       steps {
         sh '''
-          cd ansible
+          cd oneclick-monitoring-FINAL/ansible
           ansible-playbook site.yml
         '''
       }
