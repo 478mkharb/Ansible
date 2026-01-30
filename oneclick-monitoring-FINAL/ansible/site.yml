@@ -1,0 +1,11 @@
+- hosts: monitoring
+  become: true
+  roles:
+    - prometheus
+    - grafana
+
+- hosts: app
+  become: true
+  roles:
+    - nginx
+    - node_exporter
