@@ -1,4 +1,4 @@
-key_name                    = "ec2-ssh-key"
+key_name                    = "geeta"
 instance_type_monitoring    = "t3.small"
 instance_type_app           = "t3.micro"
 project                     = "oneclick-monitoring"
