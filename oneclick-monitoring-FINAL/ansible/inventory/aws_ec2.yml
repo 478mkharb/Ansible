@@ -10,3 +10,14 @@ keyed_groups:
   - key: tags.Role
     prefix: ""
     leading_separator: false
+
+    plugin: amazon.aws.aws_ec2
+
+hostnames:
+  - private-ip-address
+
+compose:
+  ansible_host: private_ip_address
+  ansible_user: ubuntu
+  ansible_ssh_common_args: >
+    -o ProxyCommand="ssh -i ~/.ssh/geeta.pem -W %h:%p ubuntu@{{ lookup('env','BASTION_IP') }}"
