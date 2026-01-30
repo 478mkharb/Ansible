@@ -15,23 +15,52 @@ pipeline {
       }
     }
 
-    stage('Terraform Apply') {
+    stage('Terraform Init & Apply') {
       steps {
-        sh '''
-          cd oneclick-monitoring-FINAL/terraform
-          terraform init
-          terraform apply -auto-approve
-        '''
+        dir('oneclick-monitoring-FINAL/terraform') {
+          sh '''
+            terraform init
+            terraform apply -auto-approve
+          '''
+        }
       }
     }
 
-    stage('Configure Servers') {
+    stage('Fetch Bastion IP') {
       steps {
-        sh '''
-          cd oneclick-monitoring-FINAL/ansible
-          ansible-playbook site.yml
-        '''
+        dir('oneclick-monitoring-FINAL/terraform') {
+          script {
+            env.BASTION_IP = sh(
+              script: "terraform output -raw bastion_public_ip",
+              returnStdout: true
+            ).trim()
+
+            echo "✅ Bastion Public IP: ${env.BASTION_IP}"
+          }
+        }
       }
+    }
+
+    stage('Configure Servers (Ansible)') {
+      steps {
+        dir('oneclick-monitoring-FINAL/ansible') {
+          sh '''
+            ansible-playbook site.yml
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "🎉 One-Click Monitoring Infra Deployed Successfully"
+      echo "🔐 Bastion Host IP: ${env.BASTION_IP}"
+      echo "👉 Use SSH port-forwarding to access Grafana & Prometheus"
+    }
+
+    failure {
+      echo "❌ Pipeline failed. Check logs above."
     }
   }
 }
