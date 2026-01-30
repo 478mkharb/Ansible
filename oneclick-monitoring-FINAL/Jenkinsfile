@@ -45,7 +45,16 @@ pipeline {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
           sh '''
-            ansible-playbook site.yml -e "bastion_ip=$BASTION_IP"
+            set -e
+
+            echo "🔐 Starting SSH Agent"
+            eval "$(ssh-agent -s)"
+
+            echo "🔑 Adding Bastion SSH key"
+            ssh-add /var/lib/jenkins/.ssh/geeta.pem
+
+            echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
+            ansible-playbook site.yml -e "bastion_ip=${BASTION_IP}"
           '''
         }
       }
@@ -54,9 +63,9 @@ pipeline {
 
   post {
     success {
-      echo "🎉 One-Click Monitoring Infra Deployed Successfully"
+      echo "🎉 One-Click Monitoring Infrastructure Deployed Successfully"
       echo "🔐 Bastion Host IP: ${env.BASTION_IP}"
-      echo "👉 Use SSH port-forwarding to access Grafana & Prometheus"
+      echo "📊 Access Grafana & Prometheus via SSH Port Forwarding"
     }
 
     failure {
