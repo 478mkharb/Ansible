@@ -19,6 +19,7 @@ pipeline {
       steps {
         dir('oneclick-monitoring-FINAL/terraform') {
           sh '''
+            set -e
             terraform init
             terraform apply -auto-approve
           '''
@@ -31,7 +32,7 @@ pipeline {
         dir('oneclick-monitoring-FINAL/terraform') {
           script {
             env.BASTION_IP = sh(
-              script: "terraform output -raw bastion_public_ip",
+              script: 'terraform output -raw bastion_public_ip',
               returnStdout: true
             ).trim()
 
@@ -52,7 +53,7 @@ pipeline {
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
               ansible-playbook site.yml \
-                -e "bastion_ip=${BASTION_IP}" \
+                -e bastion_ip=${BASTION_IP} \
                 --ssh-common-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
                 --fail-on-empty
             '''
