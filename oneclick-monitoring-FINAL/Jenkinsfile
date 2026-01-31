@@ -12,12 +12,6 @@ pipeline {
 
   stages {
 
-    stage('Clean Workspace (Before)') {
-      steps {
-        cleanWs()
-      }
-    }
-
     stage('Checkout') {
       steps {
         git branch: 'mukesh',
@@ -60,11 +54,10 @@ pipeline {
             sh '''
               set -e
 
-              # Use Ansible-native env var (avoids Jenkins/Groovy CLI parsing issues)
+              # Bastion hop via ProxyJump (Jenkins-safe)
               export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
 
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
-              echo "🔑 SSH args: $ANSIBLE_SSH_COMMON_ARGS"
 
               ansible-playbook site.yml \
                 -e bastion_ip=${BASTION_IP}
@@ -85,11 +78,6 @@ pipeline {
 
     failure {
       echo "❌ Pipeline failed. Check logs above."
-    }
-
-    always {
-      echo "🧹 Cleaning workspace (After)"
-      cleanWs()
     }
   }
 }
