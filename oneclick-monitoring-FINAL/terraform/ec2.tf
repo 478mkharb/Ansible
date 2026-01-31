@@ -33,12 +33,26 @@ resource "aws_instance" "bastion" {
     aws_security_group.bastion_sg.id
   ]
 
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+
+    mkdir -p /home/ubuntu/.ssh
+    cat <<KEY > /home/ubuntu/.ssh/prometheus-key.pem
+${file("/var/lib/jenkins/.ssh/prometheus-key.pem")}
+KEY
+
+    chmod 600 /home/ubuntu/.ssh/prometheus-key.pem
+    chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+  EOF
+
   tags = {
     Name    = "bastion"
     Role    = "bastion"
     Project = var.project
   }
 }
+
 
 ############################################
 # Monitoring EC2 instances (Prometheus + Grafana)
