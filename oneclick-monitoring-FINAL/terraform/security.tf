@@ -4,7 +4,7 @@
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   description = "Security group for Jenkins server"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.this.id
 
   # Jenkins usually does NOT need inbound SSH from the world
   # Add inbound rules here ONLY if you manually SSH into Jenkins
@@ -18,7 +18,8 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   tags = {
-    Name = "jenkins-sg"
+    Name    = "jenkins-sg"
+    Project = var.project
   }
 }
 
@@ -28,7 +29,7 @@ resource "aws_security_group" "jenkins_sg" {
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion-sg"
   description = "Allow SSH only from Jenkins SG"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
     description     = "SSH from Jenkins"
@@ -47,7 +48,8 @@ resource "aws_security_group" "bastion_sg" {
   }
 
   tags = {
-    Name = "bastion-sg"
+    Name    = "bastion-sg"
+    Project = var.project
   }
 }
 
@@ -57,7 +59,7 @@ resource "aws_security_group" "bastion_sg" {
 resource "aws_security_group" "private_ec2_sg" {
   name        = "private-ec2-sg"
   description = "Allow SSH only from Bastion SG"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
     description     = "SSH from Bastion"
@@ -76,6 +78,7 @@ resource "aws_security_group" "private_ec2_sg" {
   }
 
   tags = {
-    Name = "private-ec2-sg"
+    Name    = "private-ec2-sg"
+    Project = var.project
   }
 }
