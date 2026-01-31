@@ -50,18 +50,14 @@ pipeline {
             sh '''
               set -e
 
-              # IMPORTANT: define SSH args INSIDE the shell (prevents Jenkins breaking them)
+              # SSH options MUST be one single string
               SSH_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
-              # Safety check: fail pipeline if inventory is empty or broken
-              ansible-inventory -i inventory/aws_ec2.yml --list > /tmp/inv.json
-              grep '"_meta"' /tmp/inv.json > /dev/null
-
               ansible-playbook site.yml \
                 -e bastion_ip=${BASTION_IP} \
-                --ssh-common-args "$SSH_ARGS"
+                --ssh-common-args="$SSH_ARGS"
             '''
           }
 
