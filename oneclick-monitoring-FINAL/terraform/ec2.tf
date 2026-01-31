@@ -1,7 +1,6 @@
 ############################################
 # Data source: Latest Ubuntu 22.04 AMI
 ############################################
-
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -20,31 +19,18 @@ data "aws_ami" "ubuntu" {
 ############################################
 # Bastion Host (Public Subnet)
 ############################################
-
 resource "aws_instance" "bastion" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public.id
-  key_name      = var.key_name
+
+  key_name = var.key_name
 
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
     aws_security_group.bastion_sg.id
   ]
-
-  user_data = <<-EOF
-    #!/bin/bash
-    set -e
-
-    mkdir -p /home/ubuntu/.ssh
-    cat <<KEY > /home/ubuntu/.ssh/prometheus-key.pem
-${file("/var/lib/jenkins/.ssh/prometheus-key.pem")}
-KEY
-
-    chmod 600 /home/ubuntu/.ssh/prometheus-key.pem
-    chown -R ubuntu:ubuntu /home/ubuntu/.ssh
-  EOF
 
   tags = {
     Name    = "bastion"
@@ -53,11 +39,9 @@ KEY
   }
 }
 
-
 ############################################
-# Monitoring EC2 instances (Prometheus + Grafana)
+# Monitoring EC2 Instances (Private Subnets)
 ############################################
-
 resource "aws_instance" "monitoring" {
   count         = 2
   ami           = data.aws_ami.ubuntu.id
@@ -70,8 +54,9 @@ resource "aws_instance" "monitoring" {
 
   key_name = var.key_name
 
-  iam_instance_profile   = data.aws_iam_instance_profile.prometheus_profile.name
-  vpc_security_group_ids = [aws_security_group.monitoring_sg.id]
+  vpc_security_group_ids = [
+    aws_security_group.private_ec2_sg.id
+  ]
 
   tags = {
     Name    = "monitoring-${count.index + 1}"
@@ -81,9 +66,8 @@ resource "aws_instance" "monitoring" {
 }
 
 ############################################
-# Application EC2 instance
+# Application EC2 Instance (Private Subnet)
 ############################################
-
 resource "aws_instance" "app" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type_app
@@ -91,8 +75,9 @@ resource "aws_instance" "app" {
 
   key_name = var.key_name
 
-  iam_instance_profile   = data.aws_iam_instance_profile.prometheus_profile.name
-  vpc_security_group_ids = [aws_security_group.monitoring_sg.id]
+  vpc_security_group_ids = [
+    aws_security_group.private_ec2_sg.id
+  ]
 
   tags = {
     Name    = "app-1"
