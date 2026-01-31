@@ -56,7 +56,7 @@ resource "aws_instance" "monitoring" {
 
   key_name = var.key_name
 
-  iam_instance_profile   = data.aws_iam_instance_profile.prometheus_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.prometheus_profile.name
   vpc_security_group_ids = [aws_security_group.monitoring_sg.id]
 
   tags = {
@@ -77,7 +77,7 @@ resource "aws_instance" "app" {
 
   key_name = var.key_name
 
-  iam_instance_profile   = data.aws_iam_instance_profile.prometheus_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.prometheus_profile.name
   vpc_security_group_ids = [aws_security_group.monitoring_sg.id]
 
   tags = {
