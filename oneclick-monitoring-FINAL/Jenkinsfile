@@ -44,18 +44,20 @@ pipeline {
     stage('Configure Servers (Ansible)') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-          sh '''
-            set -e
 
-            echo "🔐 Starting SSH Agent"
-            eval "$(ssh-agent -s)"
+          sshagent(['bastion-ssh-key']) {
+            sh '''
+              set -e
 
-            echo "🔑 Adding Bastion SSH key"
-            ssh-add /var/lib/jenkins/.ssh/geeta.pem
+              echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
-            echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
-            ansible-playbook site.yml -e "bastion_ip=${BASTION_IP}"
-          '''
+              ansible-playbook site.yml \
+                -e "bastion_ip=${BASTION_IP}" \
+                --ssh-common-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
+                --fail-on-empty
+            '''
+          }
+
         }
       }
     }
