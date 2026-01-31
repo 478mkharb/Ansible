@@ -5,10 +5,6 @@ pipeline {
     AWS_DEFAULT_REGION = 'ap-south-1'
   }
 
-  options {
-    timestamps()
-  }
-
   stages {
 
     stage('Checkout') {
@@ -18,11 +14,10 @@ pipeline {
       }
     }
 
-    stage('Terraform Init & Apply') {
+    stage('Terraform Apply') {
       steps {
         dir('oneclick-monitoring-FINAL/terraform') {
           sh '''
-            set -e
             terraform init
             terraform apply -auto-approve
           '''
@@ -30,65 +25,30 @@ pipeline {
       }
     }
 
-    stage('Generate Ansible Inventory') {
+    stage('Fetch Bastion IP') {
       steps {
-        dir('oneclick-monitoring-FINAL') {
+        dir('oneclick-monitoring-FINAL/terraform') {
           script {
-            def bastion = sh(
-              script: 'cd terraform && terraform output -raw bastion_public_ip',
+            env.BASTION_IP = sh(
+              script: 'terraform output -raw bastion_public_ip',
               returnStdout: true
             ).trim()
-
-            def monitoring = sh(
-              script: 'cd terraform && terraform output -json monitoring_private_ips | jq -r ".[]"',
-              returnStdout: true
-            ).trim()
-
-            def app = sh(
-              script: 'cd terraform && terraform output -raw app_private_ip',
-              returnStdout: true
-            ).trim()
-
-            sh """
-              cat > ansible/inventory.ini <<EOF
-[_monitoring]
-${monitoring}
-
-[_app]
-${app}
-
-[all:vars]
-ansible_user=ubuntu
-ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${bastion}'
-EOF
-            """
-
-            sh 'cat ansible/inventory.ini'
           }
         }
       }
     }
 
-    stage('Configure Servers (Ansible)') {
+    stage('Run Ansible') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
           sshagent(['prometheus-key']) {
             sh '''
-              set -e
-              ansible-playbook -i inventory.ini site.yml
+              export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
+              ansible-playbook site.yml
             '''
           }
         }
       }
-    }
-  }
-
-  post {
-    success {
-      echo "🎉 Infrastructure + Configuration completed successfully"
-    }
-    failure {
-      echo "❌ Pipeline failed. Check logs above."
     }
   }
 }
