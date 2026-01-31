@@ -1,87 +1,52 @@
 ############################################
-# Data source: Latest Ubuntu 22.04 AMI
-############################################
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
-############################################
-# Bastion Host (Public Subnet)
+# Bastion Host
 ############################################
 resource "aws_instance" "bastion" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public.id
-
-  key_name = var.key_name
+  key_name      = var.key_name
 
   associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.bastion_sg.id]
 
-  vpc_security_group_ids = [
-    aws_security_group.bastion_sg.id
-  ]
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+    mkdir -p /home/ubuntu/.ssh
+    echo "${file("${path.module}/prometheus-key.pub")}" >> /home/ubuntu/.ssh/authorized_keys
+    chmod 600 /home/ubuntu/.ssh/authorized_keys
+    chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+  EOF
 
   tags = {
-    Name    = "bastion"
-    Role    = "bastion"
-    Project = var.project
+    Name = "bastion"
   }
 }
 
 ############################################
-# Monitoring EC2 Instances (Private Subnets)
+# Monitoring EC2
 ############################################
 resource "aws_instance" "monitoring" {
   count         = 2
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type_monitoring
+  subnet_id     = element([aws_subnet.private_a.id, aws_subnet.private_b.id], count.index)
 
-  subnet_id = element(
-    [aws_subnet.private_a.id, aws_subnet.private_b.id],
-    count.index
-  )
+  key_name                 = var.key_name
+  vpc_security_group_ids   = [aws_security_group.private_ec2_sg.id]
+  iam_instance_profile     = data.aws_iam_instance_profile.prometheus_profile.name
 
-  key_name = var.key_name
-
-  vpc_security_group_ids = [
-    aws_security_group.private_ec2_sg.id
-  ]
-
-  tags = {
-    Name    = "monitoring-${count.index + 1}"
-    Role    = "monitoring"
-    Project = var.project
-  }
-}
-
-############################################
-# Application EC2 Instance (Private Subnet)
-############################################
-resource "aws_instance" "app" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type_app
-  subnet_id     = aws_subnet.private_b.id
-
-  key_name = var.key_name
-
-  vpc_security_group_ids = [
-    aws_security_group.private_ec2_sg.id
-  ]
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+    mkdir -p /home/ubuntu/.ssh
+    echo "${file("${path.module}/prometheus-key.pub")}" >> /home/ubuntu/.ssh/authorized_keys
+    chmod 600 /home/ubuntu/.ssh/authorized_keys
+    chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+  EOF
 
   tags = {
-    Name    = "app-1"
-    Role    = "app"
-    Project = var.project
+    Name = "monitoring-${count.index + 1}"
   }
 }
