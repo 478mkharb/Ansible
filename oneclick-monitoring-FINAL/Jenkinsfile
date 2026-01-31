@@ -13,8 +13,10 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git branch: 'mukesh',
-            url: 'git@github.com:478mkharb/Ansible.git'
+        sshagent(['github-ssh-key']) {
+          git branch: 'mukesh',
+              url: 'git@github.com:478mkharb/Ansible.git'
+        }
       }
     }
 
@@ -66,7 +68,7 @@ EOF
     stage('Configure Servers (Ansible)') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-          sshagent(['bastion-ssh-key']) {
+          sshagent(['prometheus-key']) {
             sh '''
               set -e
               ansible-playbook site.yml
