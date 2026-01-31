@@ -3,7 +3,6 @@ pipeline {
 
   environment {
     AWS_DEFAULT_REGION = 'ap-south-1'
-    ANSIBLE_HOST_KEY_CHECKING = 'False'
   }
 
   options {
@@ -31,35 +30,41 @@ pipeline {
       }
     }
 
-    stage('Fetch Bastion IP') {
+    stage('Generate Ansible Inventory') {
       steps {
-        dir('oneclick-monitoring-FINAL/terraform') {
+        dir('oneclick-monitoring-FINAL') {
           script {
-            env.BASTION_IP = sh(
-              script: 'terraform output -raw bastion_public_ip',
+            def bastion = sh(
+              script: 'cd terraform && terraform output -raw bastion_public_ip',
               returnStdout: true
             ).trim()
 
-            echo "✅ Bastion Public IP: ${env.BASTION_IP}"
-          }
-        }
-      }
-    }
+            def monitoring = sh(
+              script: 'cd terraform && terraform output -json monitoring_private_ips | jq -r ".[]"',
+              returnStdout: true
+            ).trim()
 
-    stage('Prepare Ansible Bastion Vars') {
-      steps {
-        dir('oneclick-monitoring-FINAL/ansible') {
-          sh '''
-            set -e
-            mkdir -p group_vars/all
+            def app = sh(
+              script: 'cd terraform && terraform output -raw app_private_ip',
+              returnStdout: true
+            ).trim()
 
-            cat <<EOF > group_vars/all/bastion.yml
-ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
+            sh """
+              cat > ansible/inventory.ini <<EOF
+[_monitoring]
+${monitoring}
+
+[_app]
+${app}
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${bastion}'
 EOF
+            """
 
-            echo "📄 Generated Ansible bastion vars:"
-            cat group_vars/all/bastion.yml
-          '''
+            sh 'cat ansible/inventory.ini'
+          }
         }
       }
     }
@@ -70,7 +75,7 @@ EOF
           sshagent(['prometheus-key']) {
             sh '''
               set -e
-              ansible-playbook site.yml
+              ansible-playbook -i inventory.ini site.yml
             '''
           }
         }
@@ -81,7 +86,6 @@ EOF
   post {
     success {
       echo "🎉 Infrastructure + Configuration completed successfully"
-      echo "🔐 Bastion IP: ${env.BASTION_IP}"
     }
     failure {
       echo "❌ Pipeline failed. Check logs above."
