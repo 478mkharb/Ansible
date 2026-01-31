@@ -13,8 +13,8 @@ resource "aws_security_group" "bastion_sg" {
     to_port     = 22
     protocol    = "tcp"
 
-    # 👇 CHANGE THIS TO YOUR JENKINS PRIVATE CIDR
-    cidr_blocks = ["172.31.0.0/16"]
+    
+    cidr_blocks = ["172.31.0.0/20"]
   }
 
   egress {
