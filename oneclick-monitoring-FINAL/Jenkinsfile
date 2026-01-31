@@ -50,8 +50,8 @@ pipeline {
             sh '''
               set -e
 
-              # IMPORTANT: MUST be one line, MUST be quoted
-              SSH_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
+              # MUST use single quotes – Jenkins strips double quotes
+              SSH_ARGS='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@'${BASTION_IP}
 
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
