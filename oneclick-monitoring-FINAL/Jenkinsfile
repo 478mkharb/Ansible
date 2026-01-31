@@ -33,6 +33,7 @@ pipeline {
               script: 'terraform output -raw bastion_public_ip',
               returnStdout: true
             ).trim()
+            echo "Bastion IP: ${env.BASTION_IP}"
           }
         }
       }
@@ -43,7 +44,7 @@ pipeline {
         dir('oneclick-monitoring-FINAL/ansible') {
           sshagent(['prometheus-key']) {
             sh '''
-              export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
+              export ANSIBLE_SSH_COMMON_ARGS="-o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
               ansible-playbook site.yml
             '''
           }
