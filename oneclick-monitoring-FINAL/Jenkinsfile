@@ -6,7 +6,17 @@ pipeline {
     ANSIBLE_HOST_KEY_CHECKING = 'False'
   }
 
+  options {
+    timestamps()
+  }
+
   stages {
+
+    stage('Clean Workspace (Before)') {
+      steps {
+        cleanWs()
+      }
+    }
 
     stage('Checkout') {
       steps {
@@ -50,14 +60,14 @@ pipeline {
             sh '''
               set -e
 
-              # MUST use single quotes – Jenkins strips double quotes
-              SSH_ARGS='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@'${BASTION_IP}
+              # Use Ansible-native env var (avoids Jenkins/Groovy CLI parsing issues)
+              export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
 
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
+              echo "🔑 SSH args: $ANSIBLE_SSH_COMMON_ARGS"
 
               ansible-playbook site.yml \
-                -e bastion_ip=${BASTION_IP} \
-                --ssh-common-args="$SSH_ARGS"
+                -e bastion_ip=${BASTION_IP}
             '''
           }
 
@@ -75,6 +85,11 @@ pipeline {
 
     failure {
       echo "❌ Pipeline failed. Check logs above."
+    }
+
+    always {
+      echo "🧹 Cleaning workspace (After)"
+      cleanWs()
     }
   }
 }
