@@ -50,10 +50,8 @@ pipeline {
             sh '''
               set -e
 
-              # SSH MUST hop via bastion (ProxyJump)
-              SSH_ARGS="-o StrictHostKeyChecking=no \
-                        -o UserKnownHostsFile=/dev/null \
-                        -o ProxyJump=ubuntu@${BASTION_IP}"
+              # IMPORTANT: MUST be one line, MUST be quoted
+              SSH_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
 
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
