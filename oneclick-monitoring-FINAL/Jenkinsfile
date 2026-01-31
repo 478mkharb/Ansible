@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     AWS_DEFAULT_REGION = 'ap-south-1'
+    ANSIBLE_HOST_KEY_CHECKING = 'False'
   }
 
   options {
@@ -13,10 +14,8 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        sshagent(['github-ssh-key']) {
-          git branch: 'mukesh',
-              url: 'git@github.com:478mkharb/Ansible.git'
-        }
+        git branch: 'mukesh',
+            url: 'https://github.com/478mkharb/Ansible.git'
       }
     }
 
