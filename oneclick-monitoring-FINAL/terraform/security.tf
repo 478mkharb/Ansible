@@ -11,7 +11,7 @@ data "aws_security_group" "jenkins_sg" {
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion-sg"
   description = "Allow SSH only from Jenkins SG"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
     description     = "SSH from Jenkins"
@@ -39,7 +39,7 @@ resource "aws_security_group" "bastion_sg" {
 resource "aws_security_group" "private_ec2_sg" {
   name        = "private-ec2-sg"
   description = "Allow SSH only from Bastion"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
     description     = "SSH from Bastion"
