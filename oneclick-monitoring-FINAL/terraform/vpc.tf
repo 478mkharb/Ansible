@@ -2,7 +2,7 @@
 # VPC
 ############################################
 
-resource "aws_vpc" "main" {
+resource "aws_vpc" "this" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -17,7 +17,6 @@ resource "aws_vpc" "main" {
 # Subnets
 ############################################
 
-# Public subnet (Bastion + NAT Gateway)
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.0.0.0/24"
@@ -30,7 +29,6 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Private subnet A (Monitoring)
 resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.1.0/24"
@@ -42,7 +40,6 @@ resource "aws_subnet" "private_a" {
   }
 }
 
-# Private subnet B (Monitoring / App)
 resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.2.0/24"
@@ -55,7 +52,7 @@ resource "aws_subnet" "private_b" {
 }
 
 ############################################
-# Internet Gateway (IGW)
+# Internet Gateway
 ############################################
 
 resource "aws_internet_gateway" "this" {
@@ -68,7 +65,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 ############################################
-# Public Route Table
+# Route Tables
 ############################################
 
 resource "aws_route_table" "public" {
@@ -90,10 +87,6 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
-############################################
-# NAT Gateway (for private subnets)
-############################################
-
 resource "aws_eip" "nat" {
   domain = "vpc"
 
@@ -107,17 +100,13 @@ resource "aws_nat_gateway" "this" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public.id
 
+  depends_on = [aws_internet_gateway.this]
+
   tags = {
-    Name    = "monitoring-nat-gateway"
+    Name    = "monitoring-nat"
     Project = var.project
   }
-
-  depends_on = [aws_internet_gateway.this]
 }
-
-############################################
-# Private Route Table
-############################################
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
