@@ -1,23 +1,19 @@
-plugin: amazon.aws.aws_ec2
-
+plugin: aws_ec2
 regions:
   - ap-south-1
-
-filters:
-  tag:Project: oneclick-monitoring
 
 keyed_groups:
   - key: tags.Role
     prefix: ""
-    leading_separator: false
+  - key: tags.Project
+    prefix: ""
 
-    plugin: amazon.aws.aws_ec2
+filters:
+  tag:Project: oneclick-monitoring
+  instance-state-name: running
 
 hostnames:
   - private-ip-address
 
 compose:
   ansible_host: private_ip_address
-  ansible_user: ubuntu
-  ansible_ssh_common_args: >
-    -o ProxyCommand="ssh -i ~/.ssh/geeta.pem -W %h:%p ubuntu@{{ lookup('env','BASTION_IP') }}"
