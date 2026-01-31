@@ -50,11 +50,14 @@ pipeline {
             sh '''
               set -e
 
+              # IMPORTANT: keep SSH args in a variable (prevents Jenkins/Groovy from breaking quotes)
+              SSH_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
               echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
 
               ansible-playbook site.yml \
                 -e bastion_ip=${BASTION_IP} \
-                --ssh-common-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' \
+                --ssh-common-args="$SSH_ARGS" \
                 --fail-on-empty
             '''
           }
