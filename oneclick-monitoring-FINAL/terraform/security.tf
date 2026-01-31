@@ -1,24 +1,20 @@
 ############################################
-# EXISTING Jenkins Security Group (READ ONLY)
-############################################
-data "aws_security_group" "jenkins_sg" {
-  name = "Jenkins-SG-public"
-}
-
-############################################
 # Bastion Security Group
 ############################################
+
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion-sg"
-  description = "Allow SSH only from Jenkins SG"
+  description = "Allow SSH from Jenkins subnet"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description     = "SSH from Jenkins"
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [data.aws_security_group.jenkins_sg.id]
+    description = "SSH from Jenkins subnet"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+
+    # 👇 CHANGE THIS TO YOUR JENKINS PRIVATE CIDR
+    cidr_blocks = ["172.31.0.0/16"]
   }
 
   egress {
@@ -29,13 +25,15 @@ resource "aws_security_group" "bastion_sg" {
   }
 
   tags = {
-    Name = "bastion-sg"
+    Name    = "bastion-sg"
+    Project = var.project
   }
 }
 
 ############################################
 # Private EC2 Security Group
 ############################################
+
 resource "aws_security_group" "private_ec2_sg" {
   name        = "private-ec2-sg"
   description = "Allow SSH only from Bastion"
@@ -57,6 +55,7 @@ resource "aws_security_group" "private_ec2_sg" {
   }
 
   tags = {
-    Name = "private-ec2-sg"
+    Name    = "private-ec2-sg"
+    Project = var.project
   }
 }
