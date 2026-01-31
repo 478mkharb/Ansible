@@ -3,7 +3,6 @@ pipeline {
 
   environment {
     AWS_DEFAULT_REGION = 'ap-south-1'
-    ANSIBLE_HOST_KEY_CHECKING = 'False'
   }
 
   options {
@@ -46,24 +45,33 @@ pipeline {
       }
     }
 
+    stage('Prepare Ansible Bastion Vars') {
+      steps {
+        dir('oneclick-monitoring-FINAL/ansible') {
+          sh '''
+            set -e
+            mkdir -p group_vars/all
+
+            cat <<EOF > group_vars/all/bastion.yml
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
+EOF
+
+            echo "📄 Generated Ansible bastion vars:"
+            cat group_vars/all/bastion.yml
+          '''
+        }
+      }
+    }
+
     stage('Configure Servers (Ansible)') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-
           sshagent(['bastion-ssh-key']) {
             sh '''
               set -e
-
-              # Bastion hop via ProxyJump (Jenkins-safe)
-              export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}"
-
-              echo "🚀 Running Ansible via Bastion ${BASTION_IP}"
-
-              ansible-playbook site.yml \
-                -e bastion_ip=${BASTION_IP}
+              ansible-playbook site.yml
             '''
           }
-
         }
       }
     }
@@ -71,11 +79,9 @@ pipeline {
 
   post {
     success {
-      echo "🎉 One-Click Monitoring Infrastructure Deployed Successfully"
-      echo "🔐 Bastion Host IP: ${env.BASTION_IP}"
-      echo "📊 Access Grafana & Prometheus via SSH Port Forwarding"
+      echo "🎉 Infrastructure + Configuration completed successfully"
+      echo "🔐 Bastion IP: ${env.BASTION_IP}"
     }
-
     failure {
       echo "❌ Pipeline failed. Check logs above."
     }
