@@ -44,7 +44,7 @@ pipeline {
         dir('oneclick-monitoring-FINAL/ansible') {
             sh """
               export BASTION_IP=${env.BASTION_IP}
-              ansible-playbook -vvvv site.yml
+              ansible-playbook site.yml
             """
           }
         }
