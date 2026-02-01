@@ -42,13 +42,13 @@ pipeline {
     stage('Run Ansible') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-            sh """
-              export BASTION_IP=${env.BASTION_IP}
-              ansible-playbook site.yml
-            """
-          }
+          sh """
+            export BASTION_IP=${env.BASTION_IP}
+            ansible-playbook site.yml
+          """
         }
       }
     }
-  }
 
+  }
+}
