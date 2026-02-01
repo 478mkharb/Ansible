@@ -37,7 +37,8 @@ resource "aws_instance" "monitoring" {
     count.index
   )
 
-  key_name               = var.key_name
+  key_name = aws_key_pair.oneclick.key_name
+
   iam_instance_profile   = data.aws_iam_instance_profile.prometheus_profile.name
   vpc_security_group_ids = [aws_security_group.private_ec2_sg.id]
 
@@ -52,7 +53,7 @@ resource "aws_instance" "app" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type           = var.instance_type_app
   subnet_id               = aws_subnet.private_b.id
-  key_name                = var.key_name
+  key_name                = aws_key_pair.oneclick.key_name
   iam_instance_profile    = data.aws_iam_instance_profile.prometheus_profile.name
   vpc_security_group_ids  = [aws_security_group.private_ec2_sg.id]
 
