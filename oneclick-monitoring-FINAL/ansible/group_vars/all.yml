@@ -1,4 +1,8 @@
 ansible_user: ubuntu
 
 ansible_ssh_common_args: >
-  -o ProxyCommand="ssh -A -W %h:%p ubuntu@{{ lookup('env','BASTION_IP') }}"
+  -o ProxyCommand="ssh -A
+  -o StrictHostKeyChecking=no
+  -o UserKnownHostsFile=/dev/null
+  -W %h:%p
+  ubuntu@{{ lookup('env','BASTION_IP') }}"
