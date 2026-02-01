@@ -44,13 +44,8 @@ pipeline {
         dir('oneclick-monitoring-FINAL/ansible') {
           sshagent(['oneclick']) {
             sh """
-              ansible-playbook \
-                -i inventory/aws_ec2.yml \
-                -u ubuntu \
-                --ssh-common-args="-o ForwardAgent=yes -o ProxyJump=ubuntu@${env.BASTION_IP}" \
-                site.yml
-            """
-          }
+              ansible-playbook site.yml
+            """ 
         }
       }
     }
