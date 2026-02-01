@@ -47,7 +47,7 @@ pipeline {
               ansible-playbook \
                 -i inventory/aws_ec2.yml \
                 -u ubuntu \
-                --ssh-common-args="-o ForwardAgent=yes -o ProxyJump=ubuntu@${BASTION_IP}" \
+                --ssh-common-args='-o ForwardAgent=yes -o ProxyJump=ubuntu@'''${BASTION_IP}''' ' \
                 site.yml
             '''
           }
