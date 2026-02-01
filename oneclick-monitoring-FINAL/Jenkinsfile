@@ -45,7 +45,7 @@ pipeline {
           sshagent(['oneclick']) {
             sh """
               export BASTION_IP=${env.BASTION_IP}
-              ansible-playbook site.yml
+              ansible-playbook -vvvv site.yml
             """
           }
         }
