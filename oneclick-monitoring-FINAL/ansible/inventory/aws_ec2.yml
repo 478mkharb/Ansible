@@ -17,5 +17,4 @@ hostnames:
 
 compose:
   ansible_host: private_ip_address
-  ansible_ssh_common_args: >
-    -o ProxyCommand="ssh -W %h:%p ubuntu@3.111.214.15"
+ 
