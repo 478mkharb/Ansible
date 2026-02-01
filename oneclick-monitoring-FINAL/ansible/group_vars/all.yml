@@ -1,7 +1,9 @@
 ansible_user: ubuntu
 
 ansible_ssh_common_args: >
-  -o ProxyCommand="ssh -A
+  -o ProxyCommand="ssh
+  -i /var/lib/jenkins/.ssh/oneclick
+  -o IdentitiesOnly=yes
   -o StrictHostKeyChecking=no
   -o UserKnownHostsFile=/dev/null
   -W %h:%p
