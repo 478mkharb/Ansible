@@ -1,6 +1,6 @@
 ansible_user: ubuntu
-ansible_ssh_private_key_file: /var/lib/jenkins/.ssh/geeta.pem
+ansible_ssh_private_key_file: /var/lib/jenkins/.ssh/oneclick.pem
 
 ansible_ssh_common_args: >
   -o ProxyJump=ubuntu@{{ bastion_ip }}
-  -o IdentityFile=/var/lib/jenkins/.ssh/geeta.pem
+  -o IdentityFile=/var/lib/jenkins/.ssh/oneclick.pem
