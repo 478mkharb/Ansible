@@ -42,7 +42,6 @@ pipeline {
     stage('Run Ansible') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-          sshagent(['oneclick']) {
             sh """
               export BASTION_IP=${env.BASTION_IP}
               ansible-playbook -vvvv site.yml
@@ -52,4 +51,4 @@ pipeline {
       }
     }
   }
-}
+
