@@ -14,7 +14,7 @@ pipeline {
       }
     }
 
-    stage('Terraform Apply') {
+    stage('Terraform Init & Apply') {
       steps {
         dir('oneclick-monitoring-FINAL/terraform') {
           sh '''
@@ -33,8 +33,8 @@ pipeline {
               script: 'terraform output -raw bastion_public_ip',
               returnStdout: true
             ).trim()
-            echo "Bastion IP: ${env.BASTION_IP}"
           }
+          echo "Bastion IP: ${env.BASTION_IP}"
         }
       }
     }
@@ -43,10 +43,10 @@ pipeline {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
           sshagent(credentials: ['oneclick']) {
-            sh """
-              export BASTION_IP=$(terraform -chdir=../terraform output -raw bastion_public_ip)
+            sh '''
+              export BASTION_IP=${BASTION_IP}
               ansible-playbook -i inventory/aws_ec2.yml site.yml -vv
-            """
+            '''
           }
         }
       }
