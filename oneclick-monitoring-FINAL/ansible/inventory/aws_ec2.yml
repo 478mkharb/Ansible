@@ -14,10 +14,7 @@ keyed_groups:
 compose:
   ansible_host: private_ip_address
   ansible_user: ubuntu
-  ansible_ssh_common_args: >
+  ansible_ssh_common_args: >-
     -o StrictHostKeyChecking=no
     -o UserKnownHostsFile=/dev/null
-    -o ProxyCommand="ssh -W %h:%p ubuntu@{{ lookup('env','BASTION_IP') }}
-    -o StrictHostKeyChecking=no
-    -o UserKnownHostsFile=/dev/null"
-
+    -o ProxyJump=ubuntu@{{ lookup('env','BASTION_IP') }}
