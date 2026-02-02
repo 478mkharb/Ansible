@@ -45,7 +45,7 @@ pipeline {
           sshagent(credentials: ['oneclick']) {
             sh """
               export BASTION_IP=${env.BASTION_IP}
-              ansible -i inventory/aws_ec2.yml _k8s_node -m debug -a "var=ansible_ssh_common_args"
+              ansible -i inventory/aws_ec2.yml site.yml
             """
           }
         }
