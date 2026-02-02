@@ -1,20 +1,20 @@
 plugin: amazon.aws.aws_ec2
+
 regions:
   - ap-south-1
-
-keyed_groups:
-  - key: tags.Role
-    prefix: ""
-  - key: tags.Project
-    prefix: ""
 
 filters:
   tag:Project: oneclick-monitoring
   instance-state-name: running
 
-hostnames:
-  - private-ip-address
+keyed_groups:
+  - key: tags.Role
+    prefix: ""
 
 compose:
-  ansible_host: private_ip_address
- 
+  ansible_host: >
+    {{
+      public_ip_address
+      if tags.Role == 'bastion'
+      else private_ip_address
+    }}
