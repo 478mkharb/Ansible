@@ -1,0 +1,63 @@
+# =====================
+# Grafana
+# =====================
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: admin
+  service:
+    type: NodePort
+    nodePort: 32000
+
+
+# =====================
+# Prometheus Operator (INTERNAL ONLY)
+# =====================
+prometheusOperator:
+  enabled: true
+  createCustomResource: true
+  service:
+    type: ClusterIP   # never expose operator
+
+
+# =====================
+# Prometheus (UI + API)
+# =====================
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 32090
+
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    retention: 10d
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+
+# =====================
+# Node Exporter
+# =====================
+prometheus-node-exporter:
+  enabled: true
+  hostPort: false   # REQUIRED for single-node clusters
+
+
+# =====================
+# kube-state-metrics
+# =====================
+kube-state-metrics:
+  enabled: true
+
+
+# =====================
+# Alertmanager
+# =====================
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1

@@ -15,6 +15,7 @@ variable "instance_type_monitoring" {
   default = "t3.small"
 }
 
-variable "instance_type_app" {
-  default = "t3.micro"
+variable "role" {
+  description = "Role tag for the instances"
+  type        = string
 }

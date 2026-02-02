@@ -1,14 +1,9 @@
-- name: Configure monitoring servers
-  hosts: _monitoring
+---
+- hosts: _k8s_node
   become: true
+  vars:
+    monitoring_namespace: monitoring
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
   roles:
-    - prometheus
-    - grafana
-    - node_exporter
-
-- name: Configure application servers
-  hosts: _app
-  become: true
-  roles:
-    - nginx
-    - node_exporter
+    - k3s_install
+    - monitoring_k8s
