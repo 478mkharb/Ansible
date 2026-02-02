@@ -11,7 +11,7 @@ keyed_groups:
   - key: tags.Role
     prefix: ""
 
-compose:
+ccompose:
   ansible_host: >
     {{
       public_ip_address
@@ -19,8 +19,4 @@ compose:
       else private_ip_address
     }}
 
-  ansible_ssh_common_args: >
-    -o StrictHostKeyChecking=no
-    -o UserKnownHostsFile=/dev/null
-    -o ProxyJump=ubuntu@{{ lookup('env','BASTION_IP') }}
-
+  ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@{{ lookup('env','BASTION_IP') }}"
