@@ -1,8 +1,6 @@
 ansible_user: ubuntu
 
-# SSH via bastion with agent forwarding
 ansible_ssh_common_args: >
-  -o ForwardAgent=yes
-  -o ProxyJump=ubuntu@{{ lookup('env','BASTION_IP') }}
+  -o ProxyJump=ubuntu@{{ hostvars[groups['bastion'][0]].ansible_host }}
   -o StrictHostKeyChecking=no
   -o UserKnownHostsFile=/dev/null
