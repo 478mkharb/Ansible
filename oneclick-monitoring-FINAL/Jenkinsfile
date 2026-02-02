@@ -42,17 +42,17 @@ pipeline {
     stage('Run Ansible') {
       steps {
         dir('oneclick-monitoring-FINAL/ansible') {
-
-          // 🔑 Load SSH key into agent for bastion + private EC2
           sshagent(credentials: ['oneclick']) {
-
-            sh '''
-              export BASTION_IP=${BASTION_IP}
-              ansible-playbook site.yml
-            '''
+            sh """
+              export BASTION_IP=${env.BASTION_IP}
+              ansible-playbook \
+                -i inventory/aws_ec2.yml \
+                site.yml
+            """
           }
         }
       }
     }
+
   }
 }
