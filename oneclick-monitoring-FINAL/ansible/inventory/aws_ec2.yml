@@ -3,7 +3,7 @@ regions:
   - ap-south-1
 
 filters:
-  tag:Project: oneclick
+  tag:Project: oneclick-monitoring
 
 keyed_groups:
   - key: tags.Role
