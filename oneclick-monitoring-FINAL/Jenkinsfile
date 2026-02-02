@@ -44,7 +44,7 @@ pipeline {
         dir('oneclick-monitoring-FINAL/ansible') {
           sshagent(credentials: ['oneclick']) {
             sh '''
-              export BASTION_IP=${BASTION_IP}
+              export BASTION_IP=$(terraform -chdir=../terraform output -raw bastion_public_ip)
               ansible-playbook -i inventory/aws_ec2.yml site.yml -vv
             '''
           }
