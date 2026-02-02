@@ -1,7 +1,3 @@
 ansible_user: ubuntu
-
 ansible_ssh_common_args: >
-  -o ForwardAgent=yes
   -o ProxyJump=ubuntu@{{ lookup('env','BASTION_IP') }}
-  -o StrictHostKeyChecking=no
-  -o UserKnownHostsFile=/dev/null
