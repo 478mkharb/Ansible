@@ -1,4 +1,4 @@
-ansible_connection: community.aws.aws_ssm
+ansible_connection: amazon.aws.aws_ssm
 ansible_user: ubuntu
 
 # for SSM
