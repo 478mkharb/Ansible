@@ -14,4 +14,4 @@ keyed_groups:
 compose:
   ansible_host: instance_id
   ansible_user: ubuntu
-  ansible_connection: community.aws.aws_ssm
+  ansible_connection: amazon.aws.aws_ssm
