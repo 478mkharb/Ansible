@@ -15,7 +15,7 @@ resource "aws_launch_template" "monitoring_lt" {
     resource_type = "instance"
 
     tags = {
-      Name    = "monitoring-${count.index + 1}"
+      Name    = "monitoring-instance"
       Role    = var.role
       Project = var.project
     }
