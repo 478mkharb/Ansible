@@ -29,17 +29,6 @@ resource "aws_network_acl_rule" "inbound_ephemeral_any" {
   to_port        = 65535
 }
 
-resource "aws_network_acl_rule" "inbound_ephemeral_vpc" {
-  network_acl_id = aws_network_acl.private_nacl.id
-  rule_number    = 100
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = aws_vpc.this.cidr_block
-  from_port      = 1024
-  to_port        = 65535
-}
-
-
 # Inbound: Grafana
 resource "aws_network_acl_rule" "inbound_grafana" {
   network_acl_id = aws_network_acl.private_nacl.id
