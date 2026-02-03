@@ -2,15 +2,16 @@
 - hosts: _k8s_node
   become: true
   gather_facts: false
+  vars:
+    ansible_connection: community.aws.aws_ssm
+    monitoring_namespace: monitoring
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+    ansible_python_interpreter: none   
+
   tasks:
     - name: test ssm
       command: whoami
-
-  vars:
-    ansible_connection: amazon.aws.aws_ssm
-    monitoring_namespace: monitoring
-    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
-
+  
   roles:
     - k3s_install
     - monitoring_k8s
