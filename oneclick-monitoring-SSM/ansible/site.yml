@@ -2,6 +2,9 @@
 - hosts: _k8s_node
   become: true
   gather_facts: false
+  tasks:
+    - name: test ssm
+      command: whoami
 
   vars:
     ansible_connection: amazon.aws.aws_ssm
