@@ -4,7 +4,7 @@ resource "aws_launch_template" "monitoring_lt" {
   instance_type = var.instance_type_monitoring
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.ssm_profile.name
+    name = "ec2-ssm-profile"
   }
 
   vpc_security_group_ids = [

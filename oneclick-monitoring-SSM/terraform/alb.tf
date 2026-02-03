@@ -39,19 +39,6 @@ resource "aws_lb_target_group" "prometheus_tg" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "grafana_attach" {
-  count            = length(aws_instance.monitoring)
-  target_group_arn = aws_lb_target_group.grafana_tg.arn
-  target_id        = aws_instance.monitoring[count.index].id
-  port             = 30000
-}
-
-resource "aws_lb_target_group_attachment" "prometheus_attach" {
-  count            = length(aws_instance.monitoring)
-  target_group_arn = aws_lb_target_group.prometheus_tg.arn
-  target_id        = aws_instance.monitoring[count.index].id
-  port             = 30090
-}
 
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.monitoring_alb.arn
