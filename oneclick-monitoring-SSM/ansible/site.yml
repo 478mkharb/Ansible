@@ -1,6 +1,5 @@
 ---
 - hosts: _k8s_node
-  become: true
   gather_facts: false
   vars:
     ansible_connection: amazon.aws.aws_ssm

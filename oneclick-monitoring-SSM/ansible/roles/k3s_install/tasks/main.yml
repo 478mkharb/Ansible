@@ -1,8 +1,6 @@
 ---
 - name: Install and start k3s (SSM-safe)
   raw: |
-    set -e
-
     if [ ! -f /usr/local/bin/k3s ]; then
       curl -sfL https://get.k3s.io | sh -
     fi
@@ -10,11 +8,10 @@
     systemctl enable k3s
     systemctl start k3s
 
-    # wait for kubeconfig
     for i in $(seq 1 30); do
       [ -f /etc/rancher/k3s/k3s.yaml ] && exit 0
       sleep 2
     done
 
-    echo "k3s kubeconfig not found after timeout"
+    echo "k3s kubeconfig not found"
     exit 1
