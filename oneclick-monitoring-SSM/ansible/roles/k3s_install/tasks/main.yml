@@ -1,15 +1,29 @@
 ---
-- name: Install and start k3s (SSM-safe)
+- name: Install and start k3s (SSM-safe, stdout-safe)
   raw: |
+    set -e
+
+    echo "Starting k3s install"
+
     if [ ! -f /usr/local/bin/k3s ]; then
+      echo "Installing k3s"
       curl -sfL https://get.k3s.io | sh -
+    else
+      echo "k3s already installed"
     fi
 
+    echo "Enabling k3s"
     systemctl enable k3s
+
+    echo "Starting k3s"
     systemctl start k3s
 
+    echo "Waiting for kubeconfig"
     for i in $(seq 1 30); do
-      [ -f /etc/rancher/k3s/k3s.yaml ] && exit 0
+      if [ -f /etc/rancher/k3s/k3s.yaml ]; then
+        echo "k3s is ready"
+        exit 0
+      fi
       sleep 2
     done
 
