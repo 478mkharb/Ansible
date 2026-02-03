@@ -16,7 +16,7 @@ pipeline {
 
     stage('Terraform Init & Apply') {
       steps {
-        dir('oneclick-monitoring-FINAL/terraform') {
+        dir('oneclick-monitoring-SSM/terraform') {
           sh '''
             terraform init
             terraform apply -auto-approve
