@@ -9,7 +9,7 @@ resource "aws_lb" "monitoring_alb" {
   security_groups    = [aws_security_group.alb_sg.id]
 
   subnets = [
-    aws_subnet.public.id,
+    aws_subnet.public_a.id,
     aws_subnet.public_b.id
   ]
 
