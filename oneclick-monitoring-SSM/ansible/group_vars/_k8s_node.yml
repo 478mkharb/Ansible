@@ -1,0 +1,15 @@
+ansible_connection: amazon.aws.aws_ssm
+
+# 🔑 CRITICAL for SSM
+ansible_remote_tmp: /tmp/.ansible-${USER}
+ansible_shell_type: sh
+ansible_shell_executable: /bin/bash
+
+# Force HOME so `echo ~` never breaks
+ansible_env:
+  HOME: /home/ubuntu
+
+# SSM stability
+ansible_aws_ssm_region: ap-south-1
+ansible_aws_ssm_timeout: 60
+ansible_aws_ssm_retries: 3
