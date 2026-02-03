@@ -27,7 +27,7 @@ pipeline {
 
     stage('Run Ansible (SSM)') {
       steps {
-        dir('oneclick-monitoring-FINAL/ansible') {
+        dir('oneclick-monitoring-SSM/ansible') {
           sh '''
             ansible-playbook site.yml -vv
           '''
