@@ -1,34 +1,7 @@
-############################################
-# ALB Security Group
-############################################
-resource "aws_security_group" "alb_sg" {
-  name        = "monitoring-alb-sg"
-  description = "Allow HTTP to ALB"
-  vpc_id      = aws_vpc.this.id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name    = "monitoring-alb-sg"
-    Project = var.project
-  }
-}
-
-############################################
 # Application Load Balancer
-############################################
+
 resource "aws_lb" "monitoring_alb" {
   name               = "monitoring-alb"
   internal           = false
@@ -46,9 +19,9 @@ resource "aws_lb" "monitoring_alb" {
   }
 }
 
-############################################
+
 # Target Group - Grafana
-############################################
+
 resource "aws_lb_target_group" "grafana_tg" {
   name        = "grafana-tg"
   port        = 30000
@@ -67,9 +40,9 @@ resource "aws_lb_target_group" "grafana_tg" {
   }
 }
 
-############################################
+
 # Target Group - Prometheus
-############################################
+
 resource "aws_lb_target_group" "prometheus_tg" {
   name        = "prometheus-tg"
   port        = 30090
@@ -88,9 +61,9 @@ resource "aws_lb_target_group" "prometheus_tg" {
   }
 }
 
-############################################
+
 # ALB Listener
-############################################
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.monitoring_alb.arn
   port              = 80
@@ -107,9 +80,9 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-############################################
+
 # Listener Rule - Grafana
-############################################
+
 resource "aws_lb_listener_rule" "grafana_rule" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 10
@@ -126,9 +99,9 @@ resource "aws_lb_listener_rule" "grafana_rule" {
   }
 }
 
-############################################
+
 # Listener Rule - Prometheus
-############################################
+
 resource "aws_lb_listener_rule" "prometheus_rule" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 20
