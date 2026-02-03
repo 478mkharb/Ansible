@@ -1,9 +1,10 @@
 ansible_connection: amazon.aws.aws_ssm
 
-# 🔑 CRITICAL for SSM
-ansible_remote_tmp: /tmp/.ansible-${USER}
+# for SSM
+
 ansible_shell_type: sh
 ansible_shell_executable: /bin/bash
+
 
 # Force HOME so `echo ~` never breaks
 ansible_env:
