@@ -1,0 +1,45 @@
+---
+- name: Add Helm repositories
+  shell: |
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
+    helm repo add grafana https://grafana.github.io/helm-charts || true
+    helm repo update
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: Create monitoring namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: monitoring
+    state: present
+    kubeconfig: /root/.kube/config
+  become: true
+
+- name: Deploy Prometheus (lightweight, no alertmanager)
+  shell: |
+    helm upgrade --install prometheus prometheus-community/prometheus \
+      --namespace monitoring \
+      --set alertmanager.enabled=false \
+      --set pushgateway.enabled=false \
+      --set server.resources.requests.memory=256Mi \
+      --set server.resources.limits.memory=512Mi \
+      --set server.persistentVolume.enabled=false
+  args:
+    executable: /bin/bash
+  become: true
+
+- name: Deploy Grafana (lightweight)
+  shell: |
+    helm upgrade --install grafana grafana/grafana \
+      --namespace monitoring \
+      --set adminUser=admin \
+      --set adminPassword=admin \
+      --set service.type=ClusterIP \
+      --set resources.requests.memory=128Mi \
+      --set resources.limits.memory=256Mi \
+      --set persistence.enabled=false
+  args:
+    executable: /bin/bash
+  become: true

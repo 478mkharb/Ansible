@@ -1,0 +1,13 @@
+---
+- hosts: _k8s_node
+  become: true
+  gather_facts: true
+
+  vars:
+    ansible_connection: amazon.aws.aws_ssm
+    monitoring_namespace: monitoring
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+  roles:
+    - k3s_install
+    - monitoring_k8s
