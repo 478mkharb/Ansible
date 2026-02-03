@@ -17,21 +17,33 @@ resource "aws_vpc" "this" {
 # Subnets
 ############################################
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = "ap-south-1a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name    = "monitoring-public-subnet"
+    Name    = "monitoring-public-subnet-a"
+    Project = var.project
+  }
+}
+
+resource "aws_subnet" "public_b" {
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1b"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name    = "monitoring-public-subnet-b"
     Project = var.project
   }
 }
 
 resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.this.id
-  cidr_block        = "10.0.1.0/24"
+  cidr_block        = "10.0.2.0/24"
   availability_zone = "ap-south-1a"
 
   tags = {
@@ -42,7 +54,7 @@ resource "aws_subnet" "private_a" {
 
 resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.this.id
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = "10.0.3.0/24"
   availability_zone = "ap-south-1b"
 
   tags = {
