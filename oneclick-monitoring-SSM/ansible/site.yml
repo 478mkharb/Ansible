@@ -3,7 +3,7 @@
   become: true
   gather_facts: false
   vars:
-    ansible_connection: community.aws.aws_ssm
+    ansible_connection: amazon.aws.aws_ssm
     monitoring_namespace: monitoring
     kubeconfig_path: /etc/rancher/k3s/k3s.yaml
     ansible_python_interpreter: none   
