@@ -16,7 +16,8 @@ resource "aws_autoscaling_group" "monitoring_asg" {
   }
 
   target_group_arns = [
-    aws_lb_target_group.monitoring_tg.arn
+    aws_lb_target_group.grafana_tg.arn,
+    aws_lb_target_group.prometheus_tg.arn
   ]
 
   tag {
