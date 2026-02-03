@@ -29,6 +29,8 @@ pipeline {
       steps {
         dir('oneclick-monitoring-SSM/ansible') {
           sh '''
+            export PATH=$PATH:/var/lib/jenkins/.local/bin
+            ansible --version
             ansible-playbook site.yml -vv
           '''
         }
