@@ -11,36 +11,71 @@ resource "aws_launch_template" "monitoring_lt" {
     aws_security_group.private_ec2_sg.id
   ]
 
- user_data = base64encode(<<EOF
+  user_data = base64encode(<<EOF
 #!/bin/bash
 set -eux
 
-# Log everything
+# ===============================
+# LOG EVERYTHING
+# ===============================
 exec > /var/log/user-data.log 2>&1
 
-echo "Installing SSM Agent (DEB)"
+echo "[BOOT] User-data started"
 
-# Update packages
+# ===============================
+# WAIT FOR NETWORK (CRITICAL)
+# ===============================
+echo "[BOOT] Waiting for network & DNS"
+for i in {1..30}; do
+  ping -c1 8.8.8.8 && break
+  sleep 5
+done
+
+# ===============================
+# UPDATE SYSTEM
+# ===============================
 apt-get update -y
 
-# Install SSM agent via DEB (most reliable)
-if ! systemctl is-active --quiet amazon-ssm-agent; then
-  curl -o /tmp/amazon-ssm-agent.deb \
-    https://s3.ap-south-1.amazonaws.com/amazon-ssm-ap-south-1/latest/debian_amd64/amazon-ssm-agent.deb
+# ===============================
+# INSTALL SSM AGENT (UBUNTU SAFE)
+# ===============================
+echo "[SSM] Installing SSM Agent"
 
+# Try SNAP first (Ubuntu default)
+if command -v snap >/dev/null 2>&1; then
+  snap install amazon-ssm-agent --classic || true
+fi
+
+# Fallback to DEB (guaranteed)
+if ! systemctl list-unit-files | grep -q amazon-ssm-agent; then
+  curl -fsSL -o /tmp/amazon-ssm-agent.deb \
+    https://s3.ap-south-1.amazonaws.com/amazon-ssm-ap-south-1/latest/debian_amd64/amazon-ssm-agent.deb
   dpkg -i /tmp/amazon-ssm-agent.deb || apt-get -f install -y
 fi
 
-# Enable & start agent
-systemctl enable amazon-ssm-agent
-systemctl restart amazon-ssm-agent
+# ===============================
+# FORCE-ENABLE + HARD RESTART LOOP
+# ===============================
+echo "[SSM] Enabling and restarting agent"
 
+systemctl enable amazon-ssm-agent || true
+systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent || true
+
+for i in {1..10}; do
+  systemctl restart amazon-ssm-agent || true
+  systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent || true
+  sleep 15
+done
+
+# ===============================
+# STATUS CHECK
+# ===============================
 systemctl status amazon-ssm-agent --no-pager || true
+systemctl status snap.amazon-ssm-agent.amazon-ssm-agent --no-pager || true
 
-echo "SSM agent installed and started successfully"
+echo "[SSM] Agent setup complete"
 EOF
 )
-
 
   tag_specifications {
     resource_type = "instance"
