@@ -1,6 +1,3 @@
-############################################
-# VPC
-############################################
 
 resource "aws_vpc" "this" {
   cidr_block           = "10.0.0.0/16"
@@ -13,9 +10,6 @@ resource "aws_vpc" "this" {
   }
 }
 
-############################################
-# Subnets
-############################################
 
 resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.this.id
@@ -63,9 +57,7 @@ resource "aws_subnet" "private_b" {
   }
 }
 
-############################################
-# Internet Gateway
-############################################
+
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
@@ -76,9 +68,7 @@ resource "aws_internet_gateway" "this" {
   }
 }
 
-############################################
-# Route Tables
-############################################
+
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
