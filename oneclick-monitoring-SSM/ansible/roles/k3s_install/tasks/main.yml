@@ -1,5 +1,4 @@
 - name: Install and start k3s (SSM-safe)
-  become: true
   shell: |
     set -e
 
