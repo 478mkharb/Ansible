@@ -1,8 +1,15 @@
 ---
-- name: Update apt cache
-  ansible.builtin.apt:
-    update_cache: yes
+- name: Update apt cache (SSM safe)
   become: true
+  shell: |
+    rm -f /var/lib/apt/lists/lock
+    rm -f /var/cache/apt/archives/lock
+    rm -f /var/lib/dpkg/lock*
+    dpkg --configure -a
+    apt-get update -y
+  args:
+    executable: /bin/bash
+
 
 - name: Install Kubernetes Python libraries (system-wide)
   become: true
