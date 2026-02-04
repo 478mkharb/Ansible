@@ -81,7 +81,7 @@ EOF
     resource_type = "instance"
 
     tags = {
-      Name    = "monitoring-instance"
+      Name    = "monitoring-instance-${count.index + 1}"
       Role    = var.role
       Project = var.project
     }
