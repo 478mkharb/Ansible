@@ -16,6 +16,8 @@
     state: present
     kubeconfig: /root/.kube/config
   become: true
+  args:
+    executable: /bin/bash
 
 - name: Render kube-prometheus-stack values file
   ansible.builtin.template:
