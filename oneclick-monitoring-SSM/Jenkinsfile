@@ -31,7 +31,7 @@ pipeline {
           sh '''
             export PATH=$PATH:/var/lib/jenkins/.local/bin
             ansible --version
-            ansible-playbook site.yml -vv
+            ansible-playbook -i inventory/aws_ec2.yml site.yml -vv
           '''
         }
       }
