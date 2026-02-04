@@ -30,8 +30,8 @@ resource "aws_lb_target_group" "grafana_tg" {
   target_type = "instance"
 
   health_check {
-    path    = "/"
-    matcher = "200-399"
+    path = "/login"
+    port = "32000"
   }
 
   tags = {
@@ -50,9 +50,9 @@ resource "aws_lb_target_group" "prometheus_tg" {
   vpc_id      = aws_vpc.this.id
   target_type = "instance"
 
-  health_check {
-    path    = "/"
-    matcher = "200-399"
+   health_check {
+    path = "/graph"
+    port = "32090"
   }
 
   tags = {
