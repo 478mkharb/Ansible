@@ -25,17 +25,21 @@ pipeline {
       }
     }
 
+    stage('Wait for SSM') {
+      steps {
+        sh 'sleep 180'
+      }
+    }
+
     stage('Run Ansible (SSM)') {
       steps {
         dir('oneclick-monitoring-SSM/ansible') {
           sh '''
             export PATH=$PATH:/var/lib/jenkins/.local/bin
-            ansible --version
-            ansible-playbook -i inventory/aws_ec2.yml site.yml -vv
+            ansible-playbook -i inventory/aws_ec2.yml site.yml
           '''
         }
       }
     }
-
   }
 }
