@@ -24,7 +24,7 @@ resource "aws_lb" "monitoring_alb" {
 
 resource "aws_lb_target_group" "grafana_tg" {
   name        = "grafana-tg"
-  port        = 30000
+  port        = 32000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   target_type = "instance"
@@ -45,7 +45,7 @@ resource "aws_lb_target_group" "grafana_tg" {
 
 resource "aws_lb_target_group" "prometheus_tg" {
   name        = "prometheus-tg"
-  port        = 30090
+  port        = 32090
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   target_type = "instance"
