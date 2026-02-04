@@ -1,5 +1,5 @@
 resource "aws_launch_template" "monitoring_lt" {
-  name_prefix   = "monitoring-lt-"
+  name_prefix   = "lt-${var.project}-"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = var.instance_type_monitoring
 
@@ -28,7 +28,7 @@ echo "[BOOT] User-data started"
 echo "[BOOT] Waiting for network & DNS"
 for i in {1..30}; do
   ping -c1 8.8.8.8 && break
-  sleep 5
+  sleep 10
 done
 
 # ===============================
@@ -64,7 +64,7 @@ systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent || true
 for i in {1..10}; do
   systemctl restart amazon-ssm-agent || true
   systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent || true
-  sleep 15
+  sleep 30
 done
 
 # ===============================
