@@ -18,7 +18,7 @@ resource "aws_network_acl_association" "private_b" {
   network_acl_id = aws_network_acl.private_nacl.id
 }
 
-resource "aws_network_acl_rule" "inbound_ephemeral_any" {
+resource "aws_network_acl_rule" "inbound_https" {
   network_acl_id = aws_network_acl.private_nacl.id
   rule_number    = 80
   protocol       = "tcp"
