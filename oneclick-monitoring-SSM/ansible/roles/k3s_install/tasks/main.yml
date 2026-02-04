@@ -1,20 +1,12 @@
-- name: Install and start k3s (SSM-safe)
-  shell: |
+- name: Install and start k3s
+  ansible.builtin.shell: |
     set -e
 
-    if ! command -v k3s >/dev/null 2>&1; then
+    if [ ! -f /usr/local/bin/k3s ]; then
       curl -sfL https://get.k3s.io | sh -
     fi
 
     systemctl enable k3s
     systemctl start k3s
-
-    for i in $(seq 1 30); do
-      [ -f /etc/rancher/k3s/k3s.yaml ] && exit 0
-      sleep 2
-    done
-
-    echo "k3s kubeconfig not found"
-    exit 1
   args:
     executable: /bin/bash
