@@ -4,6 +4,7 @@
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
     helm repo add grafana https://grafana.github.io/helm-charts || true
     helm repo update
+  become: true
   args:
     executable: /bin/bash
  
@@ -15,7 +16,7 @@
     name: monitoring
     state: present
     kubeconfig: /root/.kube/config
-  
+  become: true
 
 - name: Deploy Prometheus (lightweight, no alertmanager)
   shell: |
@@ -26,6 +27,7 @@
       --set server.resources.requests.memory=256Mi \
       --set server.resources.limits.memory=512Mi \
       --set server.persistentVolume.enabled=false
+  become: true
   args:
     executable: /bin/bash
   
@@ -40,6 +42,7 @@
       --set resources.requests.memory=128Mi \
       --set resources.limits.memory=256Mi \
       --set persistence.enabled=false
+  become: true
   args:
     executable: /bin/bash
   
