@@ -85,4 +85,5 @@
   replace:
     path: /home/ubuntu/.kube/config
     regexp: 'https://127.0.0.1:6443'
-    replace: "https://{{ ansible_default_ipv4.address }}:6443"
+    replace: "https://{{ ansible_host }}:6443"
+
