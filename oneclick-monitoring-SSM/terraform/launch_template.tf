@@ -11,22 +11,36 @@ resource "aws_launch_template" "monitoring_lt" {
     aws_security_group.private_ec2_sg.id
   ]
 
-  user_data = base64encode(<<EOF
+ user_data = base64encode(<<EOF
 #!/bin/bash
 set -eux
 
-# Install SSM Agent (Ubuntu via snap)
-if ! systemctl is-active --quiet snap.amazon-ssm-agent.amazon-ssm-agent; then
-  snap install amazon-ssm-agent --classic || true
+# Log everything
+exec > /var/log/user-data.log 2>&1
+
+echo "Installing SSM Agent (DEB)"
+
+# Update packages
+apt-get update -y
+
+# Install SSM agent via DEB (most reliable)
+if ! systemctl is-active --quiet amazon-ssm-agent; then
+  curl -o /tmp/amazon-ssm-agent.deb \
+    https://s3.ap-south-1.amazonaws.com/amazon-ssm-ap-south-1/latest/debian_amd64/amazon-ssm-agent.deb
+
+  dpkg -i /tmp/amazon-ssm-agent.deb || apt-get -f install -y
 fi
 
-systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent
-systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent
+# Enable & start agent
+systemctl enable amazon-ssm-agent
+systemctl restart amazon-ssm-agent
 
-# Debug proof
-echo "SSM agent installed and started" > /var/log/ssm-bootstrap.log
+systemctl status amazon-ssm-agent --no-pager || true
+
+echo "SSM agent installed and started successfully"
 EOF
-  )
+)
+
 
   tag_specifications {
     resource_type = "instance"
