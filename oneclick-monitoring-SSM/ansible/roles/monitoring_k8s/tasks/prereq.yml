@@ -33,7 +33,7 @@
   replace:
     path: /root/.kube/config
     regexp: 'https://127.0.0.1:6443'
-    replace: "https://{{ inventory_hostname }}:6443"
+    replace: "https://{{ private_ip }}:6443"
 
 - name: Verify kubeconfig is readable
   become: true

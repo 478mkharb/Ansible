@@ -11,8 +11,11 @@ keyed_groups:
   - key: tags.Role
     prefix: ""
 
+hostnames:
+  - instance-id
+
 compose:
-  ansible_host: instance_id
+  private_ip: private_ip_address
   ansible_user: root
   ansible_connection: amazon.aws.aws_ssm
   ansible_shell_executable: "'/bin/bash'"
