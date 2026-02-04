@@ -14,7 +14,7 @@
     state: present
 
 
-- name: Install Kubernetes Python library for Ansible
+- name: Install Kubernetes Python libraries
   become: true
   ansible.builtin.pip:
     name:
@@ -25,12 +25,14 @@
 
 
 - name: Detect k3s kubeconfig
+  become: true
   stat:
     path: /etc/rancher/k3s/k3s.yaml
   register: k3s_kubeconfig
 
 
 - name: Detect kubeadm kubeconfig
+  become: true
   stat:
     path: /etc/kubernetes/admin.conf
   register: kubeadm_kubeconfig
@@ -45,6 +47,7 @@
     - not k3s_kubeconfig.stat.exists
     - not kubeadm_kubeconfig.stat.exists
 
+
 - name: Set kubeconfig source path
   set_fact:
     kubeconfig_src: >-
@@ -54,24 +57,32 @@
         else '/etc/kubernetes/admin.conf'
       }}
 
-- name: Ensure root .kube directory exists
-  file:
-    path: /root/.kube
-    state: directory
-    mode: '0700'
-  
 
-- name: Copy kubeconfig for root
+# ✅ USE UBUNTU HOME (NOT /root)
+- name: Ensure ubuntu .kube directory exists
+  become: true
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+
+- name: Copy kubeconfig for ubuntu
+  become: true
   copy:
     src: "{{ kubeconfig_src }}"
-    dest: /root/.kube/config
+    dest: /home/ubuntu/.kube/config
     remote_src: true
-    mode: '0600'
- 
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
 
 - name: Fix kubeconfig server address (non-localhost)
+  become: true
   replace:
-    path: /root/.kube/config
+    path: /home/ubuntu/.kube/config
     regexp: 'https://127.0.0.1:6443'
     replace: "https://{{ ansible_default_ipv4.address }}:6443"
-  
