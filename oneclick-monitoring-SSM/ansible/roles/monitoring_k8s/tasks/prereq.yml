@@ -1,89 +1,40 @@
 ---
-- name: Update apt cache
-  become: true
-  ansible.builtin.apt:
-    update_cache: yes
-
-
-- name: Ensure python3 and pip are installed
-  become: true
-  ansible.builtin.apt:
-    name:
-      - python3
-      - python3-pip
-    state: present
-
-
-- name: Install Kubernetes Python libraries
-  become: true
-  ansible.builtin.pip:
-    name:
-      - kubernetes
-      - openshift
-      - pyyaml
-    executable: pip3
-
-
-- name: Detect k3s kubeconfig
+- name: Ensure k3s kubeconfig exists
   become: true
   stat:
     path: /etc/rancher/k3s/k3s.yaml
   register: k3s_kubeconfig
 
-
-- name: Detect kubeadm kubeconfig
-  become: true
-  stat:
-    path: /etc/kubernetes/admin.conf
-  register: kubeadm_kubeconfig
-
-
-- name: Fail if no kubeconfig found
+- name: Fail if k3s kubeconfig missing
   fail:
-    msg: >
-      Kubernetes kubeconfig not found.
-      Ensure Kubernetes (k3s or kubeadm) is installed before running monitoring role.
-  when:
-    - not k3s_kubeconfig.stat.exists
-    - not kubeadm_kubeconfig.stat.exists
+    msg: "k3s kubeconfig not found at /etc/rancher/k3s/k3s.yaml"
+  when: not k3s_kubeconfig.stat.exists
 
-
-- name: Set kubeconfig source path
-  set_fact:
-    kubeconfig_src: >-
-      {{
-        '/etc/rancher/k3s/k3s.yaml'
-        if k3s_kubeconfig.stat.exists
-        else '/etc/kubernetes/admin.conf'
-      }}
-
-
-
-- name: Ensure ubuntu .kube directory exists
+- name: Ensure /root/.kube exists
   become: true
   file:
-    path: /home/ubuntu/.kube
+    path: /root/.kube
     state: directory
-    owner: ubuntu
-    group: ubuntu
-    mode: '0755'
+    mode: '0700'
 
-
-- name: Copy kubeconfig for ubuntu
+- name: Copy kubeconfig for root (FORCE overwrite)
   become: true
   copy:
-    src: "{{ kubeconfig_src }}"
-    dest: /home/ubuntu/.kube/config
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
     remote_src: true
-    owner: ubuntu
-    group: ubuntu
-    mode: '0644'
+    owner: root
+    group: root
+    mode: '0600'
+    force: true
 
-
-- name: Fix kubeconfig server address (non-localhost)
+- name: Replace localhost in kubeconfig
   become: true
   replace:
-    path: /home/ubuntu/.kube/config
+    path: /root/.kube/config
     regexp: 'https://127.0.0.1:6443'
-    replace: "https://{{ ansible_host }}:6443"
+    replace: "https://{{ inventory_hostname }}:6443"
 
+- name: Verify kubeconfig is readable
+  become: true
+  command: kubectl get nodes
