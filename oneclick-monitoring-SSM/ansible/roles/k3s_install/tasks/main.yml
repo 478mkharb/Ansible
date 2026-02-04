@@ -1,4 +1,5 @@
 - name: Install and start k3s
+  become: true
   ansible.builtin.shell: |
     set -e
 
