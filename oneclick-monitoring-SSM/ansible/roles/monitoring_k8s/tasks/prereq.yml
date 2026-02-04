@@ -2,7 +2,7 @@
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: yes
-  become: true
+
 
 - name: Ensure python3 and pip are installed
   ansible.builtin.apt:
@@ -10,7 +10,7 @@
       - python3
       - python3-pip
     state: present
-  become: true
+
 
 - name: Install Kubernetes Python library for Ansible
   ansible.builtin.pip:
@@ -19,19 +19,19 @@
       - openshift
       - pyyaml
     executable: pip3
-  become: true
+
 
 - name: Detect k3s kubeconfig
   stat:
     path: /etc/rancher/k3s/k3s.yaml
   register: k3s_kubeconfig
-  become: true
+
 
 - name: Detect kubeadm kubeconfig
   stat:
     path: /etc/kubernetes/admin.conf
   register: kubeadm_kubeconfig
-  become: true
+
 
 - name: Fail if no kubeconfig found
   fail:
@@ -56,7 +56,7 @@
     path: /root/.kube
     state: directory
     mode: '0700'
-  become: true
+  
 
 - name: Copy kubeconfig for root
   copy:
@@ -64,11 +64,11 @@
     dest: /root/.kube/config
     remote_src: true
     mode: '0600'
-  become: true
+ 
 
 - name: Fix kubeconfig server address (non-localhost)
   replace:
     path: /root/.kube/config
     regexp: 'https://127.0.0.1:6443'
     replace: "https://{{ ansible_default_ipv4.address }}:6443"
-  become: true
+  

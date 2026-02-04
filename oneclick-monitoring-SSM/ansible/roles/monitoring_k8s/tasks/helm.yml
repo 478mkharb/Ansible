@@ -6,7 +6,7 @@
     helm repo update
   args:
     executable: /bin/bash
-  become: true
+ 
 
 - name: Create monitoring namespace
   kubernetes.core.k8s:
@@ -15,7 +15,7 @@
     name: monitoring
     state: present
     kubeconfig: /root/.kube/config
-  become: true
+  
 
 - name: Deploy Prometheus (lightweight, no alertmanager)
   shell: |
@@ -28,7 +28,7 @@
       --set server.persistentVolume.enabled=false
   args:
     executable: /bin/bash
-  become: true
+  
 
 - name: Deploy Grafana (lightweight)
   shell: |
@@ -42,4 +42,4 @@
       --set persistence.enabled=false
   args:
     executable: /bin/bash
-  become: true
+  
