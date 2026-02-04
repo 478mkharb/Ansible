@@ -1,0 +1,69 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_DEFAULT_REGION = 'ap-south-1'
+    TF_IN_AUTOMATION   = 'true'
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        git branch: 'mukesh',
+            url: 'https://github.com/478mkharb/Ansible.git'
+      }
+    }
+
+    stage('Terraform Init & Apply') {
+      steps {
+        dir('oneclick-monitoring-SSM/terraform') {
+          sh '''
+            terraform init -input=false
+            terraform apply -auto-approve -input=false
+          '''
+        }
+      }
+    }
+
+    stage('Wait for SSM Managed Instances') {
+      steps {
+        sh '''
+          echo "Waiting for instances to become SSM managed..."
+          for i in {1..12}; do
+            COUNT=$(aws ssm describe-instance-information \
+              --query "length(InstanceInformationList)" \
+              --output text)
+
+            if [ "$COUNT" -ge 1 ]; then
+              echo "SSM instances are ready"
+              exit 0
+            fi
+
+            echo "SSM not ready yet... retrying"
+            sleep 30
+          done
+
+          echo "SSM instances did not register in time"
+          exit 1
+        '''
+      }
+    }
+
+    stage('Run Ansible (via SSM)') {
+      steps {
+        dir('oneclick-monitoring-VPC-end/ansible') {
+          sh '''
+            export PATH=$PATH:/var/lib/jenkins/.local/bin
+
+            ansible-galaxy collection install amazon.aws --force
+
+            ansible-inventory -i inventory/aws_ec2.yml --graph
+
+            ansible-playbook -i inventory/aws_ec2.yml site.yml
+          '''
+        }
+      }
+    }
+  }
+}
