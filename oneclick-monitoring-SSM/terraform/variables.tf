@@ -14,3 +14,8 @@ variable "role" {
   description = "Role tag for the instances"
   type        = string
 }
+
+variable "monitoring_instance_ids" {
+  description = "List of monitoring instance IDs"
+  type        = list(string)
+}
