@@ -27,11 +27,11 @@ resource "aws_lb_target_group" "grafana_tg" {
 
   health_check {
     path                = "/login"
-    port                = "32000"
-    interval            = 15
-    timeout             = 5
+    port                = "traffic-port"
+    interval            = 30
+    timeout             = 10
     healthy_threshold   = 2
-    unhealthy_threshold = 2
+    unhealthy_threshold = 5
     matcher             = "200-399"
   }
 
@@ -50,11 +50,11 @@ resource "aws_lb_target_group" "prometheus_tg" {
 
   health_check {
     path                = "/-/ready"
-    port                = "32090"
-    interval            = 15
-    timeout             = 5
+    port                = "traffic-port"
+    interval            = 30
+    timeout             = 10
     healthy_threshold   = 2
-    unhealthy_threshold = 2
+    unhealthy_threshold = 5
     matcher             = "200-399"
   }
 
@@ -70,27 +70,6 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "fixed-response"
-
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Monitoring ALB is running"
-      status_code  = "200"
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "grafana_rule" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 10
-
-  condition {
-    path_pattern {
-      values = ["/", "/grafana*", "/login*"]
-    }
-  }
-
-  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.grafana_tg.arn
   }
@@ -98,11 +77,11 @@ resource "aws_lb_listener_rule" "grafana_rule" {
 
 resource "aws_lb_listener_rule" "prometheus_rule" {
   listener_arn = aws_lb_listener.http.arn
-  priority     = 20
+  priority     = 10
 
   condition {
     path_pattern {
-      values = ["/prometheus*", "/graph*", "/-/ready"]
+      values = ["/prometheus*", "/graph*", "/-/ready*"]
     }
   }
 
@@ -111,4 +90,3 @@ resource "aws_lb_listener_rule" "prometheus_rule" {
     target_group_arn = aws_lb_target_group.prometheus_tg.arn
   }
 }
-
