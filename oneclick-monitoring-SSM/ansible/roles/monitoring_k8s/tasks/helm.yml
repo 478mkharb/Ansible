@@ -8,18 +8,23 @@
   args:
     executable: /bin/bash
  
-
 - name: Create monitoring namespace
-  become: true
   kubernetes.core.k8s:
-    kubeconfig: /root/.kube/config
+    api_version: v1
+    kind: Namespace
+    name: monitoring
     state: present
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: monitoring
+    kubeconfig: /root/.kube/config
+  become: true
 
+- name: Render kube-prometheus-stack values file
+  ansible.builtin.template:
+    src: values.yml.j2
+    dest: /tmp/kube-prometheus-values.yml
+    mode: "0644"
+  become: true
+  args:
+    executable: /bin/bash
 
 - name: Deploy Prometheus (lightweight, no alertmanager)
   shell: |
@@ -29,11 +34,11 @@
       --set pushgateway.enabled=false \
       --set server.resources.requests.memory=256Mi \
       --set server.resources.limits.memory=512Mi \
-      --set server.persistentVolume.enabled=false
+      --set server.persistentVolume.enabled=false \
+       -f /tmp/kube-prometheus-values.yml
   become: true
   args:
     executable: /bin/bash
-  
 
 - name: Deploy Grafana (lightweight)
   shell: |
