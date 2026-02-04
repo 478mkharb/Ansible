@@ -15,3 +15,4 @@ compose:
   ansible_host: instance_id
   ansible_user: root
   ansible_connection: amazon.aws.aws_ssm
+  ansible_shell_executable: "'/bin/bash'"
