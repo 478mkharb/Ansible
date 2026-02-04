@@ -106,11 +106,6 @@ resource "aws_lb_listener" "prometheus_http" {
   }
 }
 
-############################################
-# Attach EC2 Instances to Target Groups
-# (If using ASG, skip this section)
-############################################
-
 resource "aws_autoscaling_attachment" "grafana_asg_attach" {
   autoscaling_group_name = aws_autoscaling_group.monitoring_asg.name
   lb_target_group_arn    = aws_lb_target_group.grafana_tg.arn
@@ -120,4 +115,3 @@ resource "aws_autoscaling_attachment" "prometheus_asg_attach" {
   autoscaling_group_name = aws_autoscaling_group.monitoring_asg.name
   lb_target_group_arn    = aws_lb_target_group.prometheus_tg.arn
 }
-
