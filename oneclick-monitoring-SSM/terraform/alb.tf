@@ -1,7 +1,3 @@
-############################################
-# Application Load Balancer
-############################################
-
 resource "aws_lb" "monitoring_alb" {
   name               = "monitoring-alb"
   internal           = false
@@ -22,10 +18,6 @@ resource "aws_lb" "monitoring_alb" {
   }
 }
 
-############################################
-# Target Group - Grafana (NodePort 32000)
-############################################
-
 resource "aws_lb_target_group" "grafana_tg" {
   name        = "grafana-tg"
   port        = 32000
@@ -36,10 +28,10 @@ resource "aws_lb_target_group" "grafana_tg" {
   health_check {
     path                = "/login"
     port                = "32000"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
     interval            = 15
     timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
     matcher             = "200-399"
   }
 
@@ -48,10 +40,6 @@ resource "aws_lb_target_group" "grafana_tg" {
     Project = var.project
   }
 }
-
-############################################
-# Target Group - Prometheus (NodePort 32090)
-############################################
 
 resource "aws_lb_target_group" "prometheus_tg" {
   name        = "prometheus-tg"
@@ -63,10 +51,10 @@ resource "aws_lb_target_group" "prometheus_tg" {
   health_check {
     path                = "/-/ready"
     port                = "32090"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
     interval            = 15
     timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
     matcher             = "200-399"
   }
 
@@ -76,42 +64,91 @@ resource "aws_lb_target_group" "prometheus_tg" {
   }
 }
 
-############################################
-# Listener - Grafana (HTTP :80)
-############################################
-
-resource "aws_lb_listener" "grafana_http" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.monitoring_alb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Monitoring ALB is running"
+      status_code  = "200"
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "grafana_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 10
+
+  condition {
+    path_pattern {
+      values = ["/", "/grafana*", "/login*"]
+    }
+  }
+
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.grafana_tg.arn
   }
 }
 
-############################################
-# Listener - Prometheus (HTTP :9090)
-############################################
+resource "aws_lb_listener_rule" "prometheus_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 20
 
-resource "aws_lb_listener" "prometheus_http" {
-  load_balancer_arn = aws_lb.monitoring_alb.arn
-  port              = 9090
-  protocol          = "HTTP"
+  condition {
+    path_pattern {
+      values = ["/prometheus*", "/graph*", "/-/ready"]
+    }
+  }
 
-  default_action {
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.prometheus_tg.arn
   }
 }
 
-resource "aws_autoscaling_attachment" "grafana_asg_attach" {
-  autoscaling_group_name = aws_autoscaling_group.monitoring_asg.name
-  lb_target_group_arn    = aws_lb_target_group.grafana_tg.arn
-}
+resource "aws_autoscaling_group" "monitoring_asg" {
+  name = "monitoring-asg"
 
-resource "aws_autoscaling_attachment" "prometheus_asg_attach" {
-  autoscaling_group_name = aws_autoscaling_group.monitoring_asg.name
-  lb_target_group_arn    = aws_lb_target_group.prometheus_tg.arn
+  desired_capacity = 2
+  min_size         = 2
+  max_size         = 4
+
+  vpc_zone_identifier = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id
+  ]
+
+  launch_template {
+    id      = aws_launch_template.monitoring_lt.id
+    version = "$Latest"
+  }
+
+  target_group_arns = [
+    aws_lb_target_group.grafana_tg.arn,
+    aws_lb_target_group.prometheus_tg.arn
+  ]
+
+  tag {
+    key                 = "Name"
+    value               = "monitoring-node"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Project"
+    value               = var.project
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Role"
+    value               = var.role
+    propagate_at_launch = true
+  }
 }
