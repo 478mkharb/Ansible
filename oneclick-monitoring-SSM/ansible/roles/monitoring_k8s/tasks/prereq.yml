@@ -58,7 +58,7 @@
       }}
 
 
-# ✅ USE UBUNTU HOME (NOT /root)
+
 - name: Ensure ubuntu .kube directory exists
   become: true
   file:
