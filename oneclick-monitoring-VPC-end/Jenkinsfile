@@ -17,7 +17,7 @@ pipeline {
 
     stage('Terraform Init & Apply') {
       steps {
-        dir('oneclick-monitoring-SSM/terraform') {
+        dir('oneclick-monitoring-VPC-end/terraform') {
           sh '''
             terraform init -input=false
             terraform apply -auto-approve -input=false
@@ -29,22 +29,25 @@ pipeline {
     stage('Wait for SSM Managed Instances') {
       steps {
         sh '''
-          echo "Waiting for instances to become SSM managed..."
-          for i in {1..12}; do
-            COUNT=$(aws ssm describe-instance-information \
-              --query "length(InstanceInformationList)" \
+          EXPECTED=2
+          echo "Waiting for monitoring EC2 instances to be ONLINE in SSM..."
+
+          for i in {1..30}; do
+            ONLINE=$(aws ssm describe-instance-information \
+              --filters "Key=tag:Project,Values=oneclick-monitoring" \
+              --query "length(InstanceInformationList[?PingStatus=='Online'])" \
               --output text)
 
-            if [ "$COUNT" -ge 1 ]; then
-              echo "SSM instances are ready"
+            if [ "$ONLINE" -eq "$EXPECTED" ]; then
+              echo "All monitoring EC2 instances are ONLINE in SSM"
               exit 0
             fi
 
-            echo "SSM not ready yet... retrying"
+            echo "$ONLINE / $EXPECTED instances online. Waiting..."
             sleep 30
           done
 
-          echo "SSM instances did not register in time"
+          echo "Monitoring EC2 instances did not become ONLINE in time"
           exit 1
         '''
       }
