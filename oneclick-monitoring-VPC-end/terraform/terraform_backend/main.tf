@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "tf_state" {
-  bucket        = "oneclick-terraform-state-036253061030"
+  bucket        = "oneclick-terraform.tf-bucket-vpc-end"
   force_destroy = true
 }
 
