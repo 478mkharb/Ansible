@@ -1,27 +1,3 @@
-resource "aws_security_group" "ssm_endpoint_sg" {
-  name        = "ssm-endpoint-sg"
-  description = "Allow private EC2 instances to connect to SSM via VPC endpoints"
-  vpc_id      = aws_vpc.this.id
-
-  ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.private_ec2_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name    = "ssm-endpoint-sg"
-    Project = var.project
-  }
-}
 
 resource "aws_vpc_endpoint" "ssm" {
   vpc_id              = aws_vpc.this.id
