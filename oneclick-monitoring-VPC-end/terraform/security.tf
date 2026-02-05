@@ -66,3 +66,31 @@ resource "aws_security_group_rule" "alb_to_prometheus" {
   security_group_id        = aws_security_group.private_ec2_sg.id
   source_security_group_id = aws_security_group.alb_sg.id
 }
+
+resource "aws_security_group" "ssm_endpoint_sg" {
+  name        = "ssm-endpoint-sg"
+  description = "Allow private EC2 instances to reach SSM via VPC endpoints"
+  vpc_id      = aws_vpc.this.id
+
+  ingress {
+    description     = "HTTPS from private EC2"
+    protocol        = "tcp"
+    from_port       = 443
+    to_port         = 443
+    security_groups = [
+      aws_security_group.private_ec2_sg.id
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name    = "ssm-endpoint-sg"
+    Project = var.project
+  }
+}
