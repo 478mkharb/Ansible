@@ -28,14 +28,6 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Optional (recommended later)
-  # ingress {
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -73,13 +65,10 @@ resource "aws_security_group" "ssm_endpoint_sg" {
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description     = "HTTPS from private EC2"
-    protocol        = "tcp"
     from_port       = 443
     to_port         = 443
-    security_groups = [
-      aws_security_group.private_ec2_sg.id
-    ]
+    protocol        = "tcp"
+    security_groups = [aws_security_group.private_ec2_sg.id]
   }
 
   egress {
